@@ -15,8 +15,10 @@ import torch.optim as optim
 import torch.nn.functional as F
 from typing import List, Union
 import sys
+import os
 cwd = os.getcwd()
-sys.path.append(cwd + 'biotrainer/')
+biotrainer = os.path.join(cwd, 'biotrainer') 
+sys.path.append(biotrainer)
 from biotrainer.utilities import cli
 from biotrainer.inference import Inferencer
 from biotrainer.protocols import Protocol
@@ -355,5 +357,7 @@ if __name__ == '__main__':
         one_hot_switch = one_hot_switch
     )
     training_pipeline.run()
+    
+    
     
     

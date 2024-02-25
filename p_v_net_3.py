@@ -12,7 +12,8 @@ import os
 from pathlib import Path
 import sys
 cwd = os.getcwd()
-sys.path.append(cwd + 'biotrainer/')
+biotrainer = os.path.join(cwd, 'biotrainer')  
+sys.path.append(biotrainer)
 from biotrainer.protocols import Protocol
 import shutil
 

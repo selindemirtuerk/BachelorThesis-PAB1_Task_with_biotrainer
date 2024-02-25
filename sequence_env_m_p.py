@@ -7,11 +7,12 @@ import random
 from typing import List, Union
 import copy
 import sys
+import os
 cwd = os.getcwd()
-sys.path.append(cwd + 'biotrainer/')
+biotrainer = os.path.join(cwd, 'biotrainer')  
+sys.path.append(biotrainer)
 from biotrainer.protocols import Protocol
 import shutil
-import os
 from pathlib import Path
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
