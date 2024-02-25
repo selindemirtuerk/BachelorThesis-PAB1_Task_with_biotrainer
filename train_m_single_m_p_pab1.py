@@ -15,7 +15,8 @@ import torch.optim as optim
 import torch.nn.functional as F
 from typing import List, Union
 import sys
-sys.path.append('/mnt/project/demirtuerks/PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/biotrainer/')
+cwd = os.getcwd()
+sys.path.append(cwd + 'biotrainer/')
 from biotrainer.utilities import cli
 from biotrainer.inference import Inferencer
 from biotrainer.protocols import Protocol
@@ -27,8 +28,8 @@ import copy
 import shutil
 from tqdm import tqdm
 
-root_data = Path("/mnt/project/demirtuerks/PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/data/")
-root_code = Path("/mnt/project/demirtuerks/PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/trial/")
+root_data = Path(os.path.join(cwd, "data/"))
+root_code = Path(os.path.join(cwd, "trial/"))
 
 data_dir = root_data / 'PAB1.txt' #'/data/PAB1_GFP_data/PAB1.txt'
 
@@ -49,7 +50,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def train_via_biotrainer(config_file_path):
     # Define the output file path
-    output_file_path = Path(os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/oracle_training/output/out.yml"))
+    output_file_path = Path(os.path.join(cwd, "oracle_training/output/out.yml"))
 
     # Check if the output file does NOT exist
     if not os.path.exists(output_file_path):
@@ -138,14 +139,11 @@ class TrainPipeline():
 
     def collect_selfplay_data(self, n_games=1):
         """collect self-play data for training"""
-        print("collect self-play data for training")
         counts = len(self.generated_seqs)
         self.buffer_no_extend = False
         for i in tqdm(range(n_games), desc="Playing"):
-        #for i in n_games:
             play_data, seq_and_fit, p_dict = self.mutate.start_mutating(self.mcts_player,
                                                           temp=self.temp)    #winner,
-            print("after start mutating")
             play_data = list(play_data)[:]
 
             self.episode_len = len(play_data)
@@ -265,20 +263,10 @@ class TrainPipeline():
                         #except TypeError as e:
                         #    print(e)
                         #    continue
-
         except KeyboardInterrupt:
-            try:
-                output_directory = Path(os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/single_emb/"))
-                folder_to_delete = output_directory / "sequence_to_value"
-                shutil.rmtree(folder_to_delete)
-                print("sequence_to_value folder removed")
-                folder_to_delete = output_directory / "residue_to_class"
-                shutil.rmtree(folder_to_delete)
-                print("residue_to_class folder removed")
-            except Exception as error:
-                pass
+            pass
         
-                        
+'''
 def main(filePath):
     
     starttime = datetime.datetime.now()
@@ -325,9 +313,7 @@ def main(filePath):
         one_hot_switch = one_hot_switch
     )
     training_pipeline.run()
-    
-    
-
+'''                       
                  
 if __name__ == '__main__':
     
@@ -342,33 +328,16 @@ if __name__ == '__main__':
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    cwd = os.getcwd()
-    sequences_file = os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/oracle_training/sequences.fasta")
-    input_file = os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/data/PAB1.txt")
+    sequences_file = os.path.join(cwd, "oracle_training/sequences.fasta")
+    input_file = os.path.join(cwd, "data/PAB1.txt")
     converter = FastaConverter(input_file=input_file, output_file=sequences_file)
     converter.convert_to_fasta()
 
     # embedding service for sequence_to_value predictions : the oracle
     ###
 
-    config_file = Path(os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/oracle_training/config.yml"))
+    config_file = Path(os.path.join(cwd, "oracle_training/config.yml"))
     model = train_via_biotrainer(config_file)
-
-    # embedding service for the policy neural net
-    ###
-
-    embedding_service: EmbeddingService = get_embedding_service(embedder_name=model.embedder_name, embeddings_file_path=None,
-                                                            device=device)
-    inputs = Path(os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/oracle_training/output/sequence_to_value/prot_t5_xl_uniref50/reduced_embeddings_file_prot_t5_xl_uniref50.h5"))
-    embeddings = embedding_service.load_embeddings(inputs)
-    predictions = model.from_embeddings(embeddings)["mapped_predictions"]
-    count = 0
-    for sequence, score in predictions.items():
-        if count < 5:
-            print(f'Sequence: {sequence}, Score: {score}')
-            count += 1
-        else:
-            break  # Exit the loop after 5 iterations
 
     embedding_service: EmbeddingService = get_embedding_service(embedder_name="Rostlab/prot_t5_xl_uniref50", embeddings_file_path=None,
                                                             use_half_precision=False, device=device)

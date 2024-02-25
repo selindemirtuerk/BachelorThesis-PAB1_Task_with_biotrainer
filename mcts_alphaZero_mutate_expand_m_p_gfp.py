@@ -121,12 +121,8 @@ class MCTS(object):
             playout_fit.append(state._state_fitness)
 
         # for the current player.
-        # print("shape of the state:", state._state.shape)
         action_probs, leaf_value = self._policy(state)
-        #print("action_probs", action_probs)
-        #print("leaf_value", leaf_value)
         # Check for end of game.
-        #print("INSIDE play_out")
         end = state.mutation_end()
         if not end:
             #print("expand action_probs")

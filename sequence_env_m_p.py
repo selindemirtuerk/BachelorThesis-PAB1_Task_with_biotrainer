@@ -7,9 +7,9 @@ import random
 from typing import List, Union
 import copy
 import sys
-sys.path.append('/mnt/project/demirtuerks/PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/biotrainer/')
+cwd = os.getcwd()
+sys.path.append(cwd + 'biotrainer/')
 from biotrainer.protocols import Protocol
-from biotrainer.embedders import EmbeddingService, get_embedding_service
 import shutil
 import os
 from pathlib import Path
@@ -45,24 +45,27 @@ def one_hot_to_string(
 
 def single_embed_for_oracle(seq_env, inputs):
 
-    cwd = os.getcwd()
-    single_emb_fasta = os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/single_emb/single_emb.fasta")
-    with open(single_emb_fasta, 'w') as file:
-        file.write('>Seq1 TARGET=Glob SET=train\n')
-        file.write(inputs)
-    protocol = Protocol.sequence_to_value
-    output_directory = Path(os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/single_emb/"))
-    embedding_file_path = seq_env.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
-                                                                                            protocol=protocol)
-    embedding = seq_env.embedding_service.load_embeddings(embedding_file_path)
-    predictions = seq_env.model.from_embeddings(embedding)["mapped_predictions"]
-    prediction = predictions["Seq1"]
-    folder_to_delete = output_directory / "sequence_to_value"
     try:
+        cwd = os.getcwd()
+        single_emb_fasta = os.path.join(cwd, "single_emb/single_emb.fasta")
+        with open(single_emb_fasta, 'w') as file:
+            file.write('>Seq1 TARGET=Glob SET=train\n')
+            file.write(inputs)
+        protocol = Protocol.sequence_to_value
+        output_directory = Path(os.path.join(cwd, "single_emb/"))
+        folder_to_delete = output_directory / "residue_to_class"
+        embedding_file_path = seq_env.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
+                                                                                                protocol=protocol)
+        embedding = seq_env.embedding_service.load_embeddings(embedding_file_path)
+        predictions = seq_env.model.from_embeddings(embedding)["mapped_predictions"]
+        prediction = predictions["Seq1"]
         shutil.rmtree(folder_to_delete)
-        #print(f"The directory {folder_to_delete} and all its contents have been removed")
-    except Exception as error:
-        print(f"Error: {error}")
+    except KeyboardInterrupt:
+        try:
+            shutil.rmtree(folder_to_delete)
+        except Exception:
+            pass
+
     return prediction
 
 

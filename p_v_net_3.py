@@ -11,7 +11,8 @@ import random
 import os
 from pathlib import Path
 import sys
-sys.path.append('/mnt/project/demirtuerks/PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/biotrainer/')
+cwd = os.getcwd()
+sys.path.append(cwd + 'biotrainer/')
 from biotrainer.protocols import Protocol
 import shutil
 
@@ -46,22 +47,24 @@ def set_learning_rate(optimizer, lr):
 
 def single_embed_for_policy_net(policy_net, seq):
 
-    cwd = os.getcwd()
-    single_emb_fasta = os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/single_emb/single_emb_policy.fasta")
-    with open(single_emb_fasta, 'w') as file:
-        file.write('>Seq1 TARGET=Glob SET=train\n')
-        file.write(seq)
-    protocol = Protocol.residue_to_class
-    output_directory = Path(os.path.join(cwd, "PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/single_emb/"))
-    embedding_file_path = policy_net.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
-                                                                                    protocol=protocol)
-    _ , emb = next(iter(policy_net.embedding_service.load_embeddings(embedding_file_path).items()))
-    folder_to_delete = output_directory / "residue_to_class"
     try:
+        cwd = os.getcwd()
+        single_emb_fasta = os.path.join(cwd, "single_emb/single_emb_policy.fasta")
+        with open(single_emb_fasta, 'w') as file:
+            file.write('>Seq1 TARGET=Glob SET=train\n')
+            file.write(seq)
+        protocol = Protocol.residue_to_class
+        output_directory = Path(os.path.join(cwd, "single_emb/"))
+        folder_to_delete = output_directory / "residue_to_class"
+        embedding_file_path = policy_net.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
+                                                                                        protocol=protocol)
+        _ , emb = next(iter(policy_net.embedding_service.load_embeddings(embedding_file_path).items()))
         shutil.rmtree(folder_to_delete)
-        #print(f"The directory {folder_to_delete} and all its contents have been removed")
-    except Exception as error:
-        print(f"Error: {error}")
+    except KeyboardInterrupt:
+        try:
+            shutil.rmtree(folder_to_delete)
+        except Exception:
+            pass
     return emb
 
 class Net(nn.Module):
@@ -268,8 +271,6 @@ class PolicyValueNet():
             else:
                 state_batch = self.state2emb(state_batch)
             log_act_probs, value = self.policy_value_net(state_batch)
-            #print("log_act_probs", log_act_probs)
-            #print("value", value)
             act_probs = np.exp(log_act_probs.data.cpu().numpy())
             return act_probs, value.data.cpu().numpy()
         else:
@@ -277,10 +278,8 @@ class PolicyValueNet():
                 state_batch = Variable(torch.FloatTensor(torch.from_numpy(np.asarray(state_batch)))) # added torch.from_numpy() here
             else:
                 state_batch = self.state2emb(state_batch)
-            #print("state_batch:", state_batch.shape)
             log_act_probs, value = self.policy_value_net(state_batch)
             act_probs = np.exp(log_act_probs.data.numpy())
-            #print("act_probs in policy_value:", state_batch.shape)
             return act_probs, value.data.numpy()
 
     def policy_value_fn(self, board):
@@ -289,10 +288,7 @@ class PolicyValueNet():
         output: a list of (action, probability) tuples for each available
         action and the score of the board state
         """
-        #numbers = list(range(20))
-        #random.shuffle(numbers)
         legal_positions = board.availables
-        #print("legal positions", len(legal_positions))
 
         current_state_0 = np.expand_dims(board.current_state(), axis = 0)
         current_state = np.ascontiguousarray(current_state_0)  ##
@@ -338,43 +334,43 @@ class PolicyValueNet():
             mcts_probs = Variable(torch.FloatTensor(torch.from_numpy(np.asarray(mcts_probs)).float()))
             winner_batch = Variable(torch.FloatTensor(torch.from_numpy(np.asarray(winner_batch))))
 
-        print("- Shapes:")
-        print("  - state_batch:", state_batch.size())
-        print("  - mcts_probs:", mcts_probs.size())
-        print("  - winner_batch:", winner_batch.size())
+        #print("- Shapes:")
+        #print("  - state_batch:", state_batch.size())
+        #print("  - mcts_probs:", mcts_probs.size())
+        #print("  - winner_batch:", winner_batch.size())
         
         # zero the parameter gradients
-        print("- Zeroing gradients...")
+        #print("- Zeroing gradients...")
         self.optimizer.zero_grad()
         # set learning rate
-        print("- Setting learning rate to:", lr)
-        set_learning_rate(self.optimizer, lr)
+        #print("- Setting learning rate to:", lr)
+        #set_learning_rate(self.optimizer, lr)
 
-        print("- Performing forward pass...")
+        #print("- Performing forward pass...")
         # forward
         log_act_probs, value = self.policy_value_net(state_batch)
-        print("Shape of log_act_probs:", log_act_probs.shape)
-        print("Shape of value:", value.shape)
+        #print("Shape of log_act_probs:", log_act_probs.shape)
+        #print("Shape of value:", value.shape)
 
         # Note: the L2 penalty is incorporated in optimizer
-        print("- Calculating losses...")
+        #print("- Calculating losses...")
         value_loss = F.mse_loss(value.view(-1), winner_batch)
         policy_loss = -torch.mean(torch.sum(mcts_probs*log_act_probs, 1))
         loss = value_loss + policy_loss
-        print("  - Value loss:", value_loss.item())
-        print("  - Policy loss:", policy_loss.item())
-        print("  - Total loss:", loss.item())
+        #print("  - Value loss:", value_loss.item())
+        #print("  - Policy loss:", policy_loss.item())
+        #print("  - Total loss:", loss.item())
         # backward and optimize
-        print("- Performing backward pass and optimization...")
+        #print("- Performing backward pass and optimization...")
         loss.backward()
         self.optimizer.step()
         # calc policy entropy, for monitoring only
-        print("- Calculating policy entropy...")
+        #print("- Calculating policy entropy...")
         entropy = -torch.mean(
                 torch.sum(torch.exp(log_act_probs) * log_act_probs, 1)
                 )
         #for pytorch version >= 0.5 please use the following line instead.
-        print("  - Entropy:", entropy.item())
+        #print("  - Entropy:", entropy.item())
         return loss.item(), entropy.item()
 
     def get_policy_param(self):
