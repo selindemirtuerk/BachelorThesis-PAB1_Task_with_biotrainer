@@ -7,7 +7,7 @@ This repository provides a modified version of EvoPlay, integrated with the open
 ## Usage
 
 ```bash
-cd PAB1_GDP_Task_with_biotrainer/
+cd PAB1_GFP_Task_with_biotrainer/
 python train_m_single_m_p_pab1.py
 ```
 
