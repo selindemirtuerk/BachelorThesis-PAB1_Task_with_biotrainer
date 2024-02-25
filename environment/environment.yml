@@ -143,4 +143,3 @@ dependencies:
       - watchdog==4.0.0
       - werkzeug==3.0.1
       - zipp==3.17.0
-prefix: /home/selindemirturk/miniconda3/envs/evoPlay_biotrainer
