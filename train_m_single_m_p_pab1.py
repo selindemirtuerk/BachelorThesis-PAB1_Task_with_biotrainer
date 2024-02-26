@@ -267,56 +267,7 @@ class TrainPipeline():
                         #    continue
         except KeyboardInterrupt:
             pass
-        
-'''
-def main(filePath):
-    
-    starttime = datetime.datetime.now()
-    seed = 144
-    print("[ Using Seed : ", seed, " ]")
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.cuda.manual_seed(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-
-    cwd = os.getcwd()
-    sequences_file = os.path.join(cwd, "oracle_training/sequences.fasta")
-    input_file = filePath
-    converter = FastaConverter(input_file=input_file, output_file=sequences_file)
-    converter.convert_to_fasta()
-    print("converted to fasta")
-
-    # embedding service for sequence_to_value predictions : the oracle
-    ###
-
-    config_file = Path(os.path.join(cwd, "oracle_training/config.yml"))
-    model = train_via_biotrainer(config_file)
-
-    # embedding service for the policy neural net
-    ###
-
-    protocol = Protocol.residue_to_class
-    embedding_service: EmbeddingService = get_embedding_service(embedder_name="Rostlab/prot_t5_xl_uniref50", embeddings_file_path=None,
-                                                            use_half_precision=True, device=device)
-    
-    # flag for using only emb in policy net training 
-    one_hot_switch = False
-
-    #print(f"Number of free parameters (oracle): {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
-    training_pipeline = TrainPipeline(
-        starts["start_seq"], 
-        AAS,
-        model,
-        embedding_service,
-        trust_radius=100,
-        one_hot_switch = one_hot_switch
-    )
-    training_pipeline.run()
-'''                       
-                 
+               
 if __name__ == '__main__':
     
     starttime = datetime.datetime.now()

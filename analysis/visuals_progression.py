@@ -37,7 +37,7 @@ def plot_polynomial_fit(data_file, score_column, degree=1):
    plt.ylabel('Fitness')
    plt.title('Evolution of Scores')
 
-   plt.xlim(0,8000)
+   plt.xlim(0,4000)
    plt.ylim(0,4)
    y_ticks = np.arange(0, 4.1, 0.5)
    labels = [f"{tick}" for tick in y_ticks]
@@ -49,7 +49,7 @@ def plot_polynomial_fit(data_file, score_column, degree=1):
 
 if __name__ == '__main__':
     
-    data_file = '/home/selindemirturk/PAB1_GFP_task_Robert_updated/PAB1_GFP_task_Robert/trial/trial_one_hot_modified_8000.csv'
+    data_file = '/home/selindemirturk/PAB1_GFP_task_with_biotrainer/trial/trial_one_hot_modified.csv'
     score_column = 'pred_fit'
     degree = 1  # Adjust the degree as needed
 
