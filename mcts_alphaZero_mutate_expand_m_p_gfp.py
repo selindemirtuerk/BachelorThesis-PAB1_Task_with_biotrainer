@@ -133,8 +133,7 @@ class MCTS(object):
 
         # Update value and visit count of nodes in this traversal.
         node.update_recursive(-leaf_value)
-        re_m_p_dict = copy.deepcopy(state.playout_dict)
-        return playout_seqs, playout_fit, re_m_p_dict
+        return playout_seqs, playout_fit, state.playout_dict
 
     def get_move_probs(self, state, m_p_dict, temp=1e-3):
         """Run all playouts sequentially and return the available actions and
@@ -146,7 +145,6 @@ class MCTS(object):
         play_fit_list = []
         g_m_p_dict = m_p_dict
         for n in range(self._n_playout):
-            #print("INSIDE MOVE_PROBS: ", n)
             state_copy = copy.deepcopy(state)
             #debug
             state_copy.playout = 1
@@ -200,11 +198,9 @@ class MCTSMutater(object):
     def get_action(self, Seq_env, temp=1e-3, return_prob=0):
         #sensible_moves = Seq_env.availables
         # the pi vector returned by MCTS as in the alphaGo Zero paper
-        #print("INSIDE GET_ACTION")
         move_probs = np.zeros(Seq_env.seq_len*Seq_env.vocab_size)
 
-        get_move_mp_dict = copy.deepcopy(self.m_p_dict)
-        acts, probs, play_seqs, play_fitness, m_p_dict = self.mcts.get_move_probs(Seq_env, get_move_mp_dict, temp) #
+        acts, probs, play_seqs, play_fitness, m_p_dict = self.mcts.get_move_probs(Seq_env, self.m_p_dict, temp)
         self.m_p_dict.update(m_p_dict)
 
         if acts:

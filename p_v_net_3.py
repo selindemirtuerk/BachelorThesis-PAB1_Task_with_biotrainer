@@ -208,8 +208,6 @@ class Net2_one_hot(nn.Module):
         x_val = F.relu(self.val_fc1(x_val))
         #print("x:", x_val.shape)
         x_val = torch.tanh(self.val_fc2(x_val))
-        print("x_act:", x_act.shape) # F.tanh
-        print("x_val:", x_val.shape)
         return x_act, x_val
 
 
@@ -244,20 +242,15 @@ class PolicyValueNet():
 
 
     def state2emb(self,state_batch):
-        #print("state2emb is called!")
         embs = list()
         for state in state_batch:
-            #print("state_batch:", state)
             one_hot = torch.from_numpy(state).permute(1, 0)
             seq = one_hot_to_string(one_hot, AAS)
             emb = single_embed_for_policy_net(self, seq)
             if self.use_gpu:
-                #emb = self.embedding_service._embedder._embed_single(seq)
                 emb = emb.to(torch.float32).unsqueeze(dim=0).cuda()
             else:
-                #emb = self.embedding_service._embedder._embed_single(seq)
                 emb = emb.to(torch.float32).unsqueeze(dim=0)
-            #print("emb_for_policy:", emb.shape)
             embs.append(emb)
         return torch.cat(embs,dim=0)
 
@@ -312,7 +305,6 @@ class PolicyValueNet():
                     self.state2emb(current_state).float())
             
             act_probs = np.exp(log_act_probs.data.numpy().flatten())
-        #print("Shape of act_probs:", act_probs.shape)
         act_probs = zip(legal_positions, act_probs[legal_positions])
         value = value.data[0][0]
         return act_probs, value
@@ -335,43 +327,26 @@ class PolicyValueNet():
             mcts_probs = Variable(torch.FloatTensor(torch.from_numpy(np.asarray(mcts_probs)).float()))
             winner_batch = Variable(torch.FloatTensor(torch.from_numpy(np.asarray(winner_batch))))
 
-        #print("- Shapes:")
-        #print("  - state_batch:", state_batch.size())
-        #print("  - mcts_probs:", mcts_probs.size())
-        #print("  - winner_batch:", winner_batch.size())
-        
-        # zero the parameter gradients
-        #print("- Zeroing gradients...")
+       
         self.optimizer.zero_grad()
         # set learning rate
-        #print("- Setting learning rate to:", lr)
-        #set_learning_rate(self.optimizer, lr)
+        set_learning_rate(self.optimizer, lr)
 
-        #print("- Performing forward pass...")
         # forward
         log_act_probs, value = self.policy_value_net(state_batch)
-        #print("Shape of log_act_probs:", log_act_probs.shape)
-        #print("Shape of value:", value.shape)
 
         # Note: the L2 penalty is incorporated in optimizer
-        #print("- Calculating losses...")
         value_loss = F.mse_loss(value.view(-1), winner_batch)
         policy_loss = -torch.mean(torch.sum(mcts_probs*log_act_probs, 1))
         loss = value_loss + policy_loss
-        #print("  - Value loss:", value_loss.item())
-        #print("  - Policy loss:", policy_loss.item())
-        #print("  - Total loss:", loss.item())
         # backward and optimize
-        #print("- Performing backward pass and optimization...")
         loss.backward()
         self.optimizer.step()
         # calc policy entropy, for monitoring only
-        #print("- Calculating policy entropy...")
         entropy = -torch.mean(
                 torch.sum(torch.exp(log_act_probs) * log_act_probs, 1)
                 )
         #for pytorch version >= 0.5 please use the following line instead.
-        #print("  - Entropy:", entropy.item())
         return loss.item(), entropy.item()
 
     def get_policy_param(self):

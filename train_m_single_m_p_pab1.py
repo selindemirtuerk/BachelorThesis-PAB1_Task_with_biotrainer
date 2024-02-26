@@ -144,15 +144,12 @@ class TrainPipeline():
         counts = len(self.generated_seqs)
         self.buffer_no_extend = False
         for i in tqdm(range(n_games), desc="Playing"):
-            play_data, seq_and_fit, p_dict = self.mutate.start_mutating(self.mcts_player,
+            play_data, seq_and_fit = self.mutate.start_mutating(self.mcts_player,
                                                           temp=self.temp)    #winner,
             play_data = list(play_data)[:]
-
             self.episode_len = len(play_data)
             
-            self.p_dict = p_dict
-            self.m_p_dict.update(self.p_dict)
-
+            
             if self.episode_len == 1: #Modified to 1, because we do not want unsuccessful runs in there, never 0 ?
                 self.buffer_no_extend = True
             else:
@@ -161,35 +158,34 @@ class TrainPipeline():
                     if seq not in self.generated_seqs:
                         self.generated_seqs.append(seq)
                         self.fit_list.append(fit)
-                        if seq not in self.m_p_dict.keys():
-                            self.m_p_dict[seq] = fit
-                        if len(self.generated_seqs)%10==0 and len(self.generated_seqs)>counts and self.part<=10:
-                            self.retrain_flag=True
+                        
+                        if seq not in self.seq_env.playout_dict.keys(): #xxrs: adds one seq when it fails to improve during a play (mutation end)
+                            self.seq_env.playout_dict[seq] = fit
                        
 
     def policy_update(self):
         """update the policy-value net"""
-        print("update the policy-value net")
+        #print("update the policy-value net")
         mini_batch = random.sample(self.data_buffer, self.batch_size)
-        print("mini_batch length:{}".format(len(mini_batch)))
+        #print("mini_batch length:{}".format(len(mini_batch)))
         state_batch = [data[0] for data in mini_batch]
-        print("state_batch length:{}".format(len(state_batch)))
+        #print("state_batch length:{}".format(len(state_batch)))
         mcts_probs_batch = [data[1] for data in mini_batch]
         #####
-        print("mcts_probs_batch length:{}".format(len(mcts_probs_batch)))
+        #print("mcts_probs_batch length:{}".format(len(mcts_probs_batch)))
         #print("mcts_probs_batch:")
         #print(mcts_probs_batch)
-        print("mcts_probs_batch[0]:")
-        print(mcts_probs_batch[0])
-        print(len(mcts_probs_batch))
+        #print("mcts_probs_batch[0]:")
+        #print(mcts_probs_batch[0])
+        #print(len(mcts_probs_batch))
         #####
         winner_batch = [data[2] for data in mini_batch]
-        print("winner_batch length:{}".format(len(winner_batch)))
+        #print("winner_batch length:{}".format(len(winner_batch)))
         #print("winner_batch:")
         #print(winner_batch)
-        print("winner_batch[0]:")
-        print(winner_batch[0])
-        print(len(winner_batch))
+        #print("winner_batch[0]:")
+        #print(winner_batch[0])
+        #print(len(winner_batch))
         #####
         
         old_probs, old_v = self.policy_value_net.policy_value(state_batch)
@@ -237,36 +233,31 @@ class TrainPipeline():
         """run the training pipeline"""
         starttime = datetime.datetime.now() 
         #part = 2
-        try:
-            if True:
-                for i in range(self.game_batch_num):
-                    self.collect_selfplay_data(self.play_batch_size)
-                    print("batch i:{}, episode_len:{}".format(
-                            i+1, self.episode_len))
+        if True:
+            for i in range(self.game_batch_num):
+                self.collect_selfplay_data(self.play_batch_size)
+                print("batch i:{}, episode_len:{}".format(
+                        i+1, self.episode_len))
 
-                    if len(self.m_p_dict.keys()) >= 8000:
-                        m_p_fitness = np.array(list(self.m_p_dict.values()))
-                        m_p_seqs = np.array(list(self.m_p_dict.keys()))
-                        df_m_p = pd.DataFrame(
-                            {"sequence": m_p_seqs, "pred_fit": m_p_fitness})
-                        df_m_p.to_csv( root_code / "trial_emb_modified_8000.csv",index=False)
-                        endtime = datetime.datetime.now() 
-                        print('time cost：',(endtime-starttime).seconds)
-                        sys.exit(0)
+                if len(self.seq_env.playout_dict.keys()) >= 8000:
+                    m_p_fitness = np.array(list(self.seq_env.playout_dict.values()))
+                    m_p_seqs = np.array(list(self.seq_env.playout_dict.keys()))
+                    df_m_p = pd.DataFrame(
+                        {"sequence": m_p_seqs, "pred_fit": m_p_fitness})
+                    df_m_p.to_csv( root_code / "trial_emb_modified_8000.csv",index=False)
+                    endtime = datetime.datetime.now() 
+                    print('time cost：',(endtime-starttime).seconds)
+                    sys.exit(0)
 
-                    print("data buffer: ", len(self.data_buffer))
-                    print("batch_size: ", self.batch_size)
-                    print("buffer_no_extend: ", self.buffer_no_extend)
+                #print("data buffer: ", len(self.data_buffer))
+                #print("batch_size: ", self.batch_size)
+                #print("buffer_no_extend: ", self.buffer_no_extend)
 
-                    if len(self.data_buffer) > self.batch_size and self.buffer_no_extend == False:
-                        #try:
-                        if True:
-                            loss, entropy = self.policy_update()
-                        #except TypeError as e:
-                        #    print(e)
-                        #    continue
-        except KeyboardInterrupt:
-            pass
+                if len(self.data_buffer) > self.batch_size and self.buffer_no_extend == False:
+                    if True:
+                        loss, entropy = self.policy_update()
+                    
+        
                
 if __name__ == '__main__':
     

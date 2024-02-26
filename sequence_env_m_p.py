@@ -3,6 +3,7 @@
 from __future__ import print_function
 import numpy as np
 import torch
+import tqdm
 import random
 from typing import List, Union
 import copy
@@ -110,9 +111,7 @@ class Seq_env(object):
         #playout
         self.start_seq_exclude_list = []
         self.playout_dict = {}
-        #self.model.to(device)
-        #self.model.eval()
-        
+                
     def init_seq_state(self): #start_player=0
 
         self.previous_fitness = -float("inf")
@@ -131,13 +130,8 @@ class Seq_env(object):
         one_hots = one_hots.unsqueeze(0)
         one_hots = one_hots.to(torch.float32)
         with torch.no_grad():
-            #inputs = one_hots
-            #inputs = inputs.permute(0, 2, 1)
             inputs = one_hot_to_string(self._state, AAS)
-            #print("inputs:", inputs)
             outputs = single_embed_for_oracle(self, inputs)
-            #print("outputs:", outputs)
-            #outputs = outputs.detach().cpu().numpy().squeeze()
         if outputs:
             self._state_fitness = outputs
       
@@ -199,12 +193,8 @@ class Seq_env(object):
                     one_hots = one_hots.unsqueeze(0)
                     one_hots = one_hots.to(torch.float32)
                     with torch.no_grad():
-                        #inputs = one_hots
-                        #inputs = inputs.permute(0, 2, 1)
                         inputs = one_hot_to_string(self._state, AAS)
                         outputs = single_embed_for_oracle(self, inputs)
-                        #print("outputs:", outputs)
-                        #outputs = outputs.detach().cpu().numpy().squeeze()
                     if outputs:
                         self._state_fitness = outputs
                 else:
@@ -217,14 +207,9 @@ class Seq_env(object):
                     one_hots = one_hots.unsqueeze(0)
                     one_hots = one_hots.to(torch.float32)
                     with torch.no_grad():
-                        #inputs = one_hots
-                        #inputs = inputs.permute(0, 2, 1)
                         inputs = one_hot_to_string(self._state, AAS)
-                        #print("inputs:", inputs)
                         inputs = one_hot_to_string(self._state, AAS)
                         outputs = single_embed_for_oracle(self, inputs)
-                        #print("outputs:", outputs)
-                        #outputs = outputs.detach().cpu().numpy().squeeze()
                     if outputs:
                         self._state_fitness = outputs
                         self.playout_dict[combo] = outputs
@@ -248,7 +233,6 @@ class Seq_env(object):
 
 
     def mutation_end(self):
-        #print("in mutation end")
         if self.repeated_seq_ocurr == True:
             return True
         #
@@ -257,10 +241,7 @@ class Seq_env(object):
         #
         if self.unuseful_move == 1:
             return True
-        #print("state_fitness:", self._state_fitness)
-        #print("previous_fitness:", self.previous_fitness)
         if self._state_fitness < self.previous_fitness:
-            #print("previous > state")  # 0.6* 0.75*
             return True
 
         return False
@@ -306,23 +287,21 @@ class Mutate(object):
 
         self.Seq_env.init_seq_state()
         print("starting sequence：{}".format(self.Seq_env.init_combo))
-        print() #add line
         generated_seqs = []
         
-        #print("INSIDE START_MUTATING")
         fit_result = []
         play_seqs_list = []
         play_fit_list = []
         states, mcts_probs, reward_z = [], [], [] #, current_players #, []
+
+        i = 0
+        pbar = tqdm(total=1, desc="Selfplay")
+
         while True:
-            #print("in while loop")
             move, move_probs, play_seqs, play_losses = mutater.get_action(self.Seq_env,
                                                  temp=temp,
                                                  return_prob=1)
             self.Seq_env.playout_dict.update(mutater.m_p_dict)
-            print("playout_dict UPDATED")
-            #print("move:", move)
-            #print("move_probs:", move_probs)
             if move:
                 # store the data
                 states.append(self.Seq_env.current_state())
@@ -340,12 +319,17 @@ class Mutate(object):
                 print(state_string)
                 print()
 
+                pbar.total = i + 1
+                pbar.update(1)
+
             end = self.Seq_env.mutation_end()
             if end:
-                #print("End satisified.")
+                
+                pbar.total = i
+                pbar.close()
+
                 mutater.reset_Mutater()
                 if is_shown:
-
+                    print()
                     print("\nMutation end.\n")
-                playout_dict = copy.deepcopy(self.Seq_env.playout_dict)
-                return zip(states, mcts_probs, reward_z), zip(generated_seqs, fit_result), playout_dict
+                return zip(states, mcts_probs, reward_z), zip(generated_seqs, fit_result)
