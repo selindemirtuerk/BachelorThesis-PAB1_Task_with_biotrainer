@@ -6,11 +6,11 @@ This repository provides a modified version of EvoPlay, integrated with the open
 
 ## Usage
 
-You will need to provide the path to your dataset in order to run the script
+You will need to provide the path to your dataset in order to run the script. Supported file formats are .txt, .csv, .tsv
 
 ```bash
 cd PAB1_GFP_Task_with_biotrainer/
-python train_m_single_m_p_pab1.py </path/to/your/dataset>
+python train_m_single_m_p_pab1.py /path/to/your/dataset
 ```
 
 
