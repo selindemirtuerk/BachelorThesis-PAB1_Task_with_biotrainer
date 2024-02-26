@@ -1,4 +1,4 @@
-# PAB1_GFP_Task_with_biotrainer
+# PAB1_Task_with_biotrainer
 
 ## Evoplay with Biotrainer Integration
 

@@ -24,6 +24,7 @@ from biotrainer.inference import Inferencer
 from biotrainer.protocols import Protocol
 from biotrainer.embedders import EmbeddingService, get_embedding_service
 from fasta_converter import FastaConverter
+from utils import parse_file_path, extract_starting_seq
 import datetime
 from pathlib import Path
 import copy
@@ -33,19 +34,6 @@ from tqdm import tqdm
 root_data = Path(os.path.join(cwd, "data/"))
 root_code = Path(os.path.join(cwd, "trial/"))
 
-data_dir = root_data / 'PAB1.txt' #'/data/PAB1_GFP_data/PAB1.txt'
-
-pab1_wt_sequence = (
-        "GNIFIKNLHPDIDNKALYDTFSVFGDILSSKIATDENGKSKGFGFVHFEEEGAAKEAIDALNGMLLNGQEIYVAP"
-        #"LTAPSIKSGTILHAWNWSFNTLKHNMKDIHDAGYTAIQTSPINQVKEGNQGDKSMSNWYWLYQPTSYQIGNRYLGTEQEFKEMCAAAEEYGIKVIVDAVINHTTSDYAAISNEVKSIPNWTHGNTPIKNWSDRWDVTQNSLSGLYDWNTQNTQVQSYLKRFLDRALNDGADGFRFDAAKHIELPDDGSYGSQFWPNITNTSAEFQYGEILQDSVSRDAAYANYMDVTASNYGHSIRSALKNRNLGVSNISHYAVDVSADKLVTWVESHDTYANDDEESTWMSDDDIRLGWAVIASRSGSTPLFFSRPEGGGNGVRFPGKSQIGDRGSALFEDQAITAVNRFHNVMAGQPEELSNPNGNNQIFMNQRGSHGVVLANAGSSSVSINTATKLPDGRYDNKAGAGSFQVNDGKLTGTINARSVAVLYPD"
-    )
-starts = {
-        "start_seq": "GNIFIKNLHPDIDNKALYDTFSVFGDILSSKIATDENGKSKGFGFVHFEEEGAAKEAIDALKGMLLNGQEIYFAP",
-        #"LTAPSIKSGTILHAWNWSFNTLKHNMKDIHDAGYTAIQTSPINQVKEGNQGDKSMSNWYWLYQPTSYQIGNRYLGTEQEFKEMCAAAEEYGIKVIVDAVINHTTSDYAAISNEVKSIPNWTHGNTPIKNWSDRWDVTQNSLSGLYDWNTQNTQVQSYLKRFLDRALNDGADGFRFDAAKHIELPDDGSYGSQFWPNITNTSAEFQYGEILQDSVSRDAAYANYMDVTASNYGHSIRSALKNRNLGVSNISHYAVDVSADKLVTWVESHDTYANDDEESTWMSDDDIRLGWAVIASRSGSTPLFFSRPEGGGNGVRFPGKSQIGDRGSALFEDQAITAVNRFHNVMAGQPEELSNPNGNNQIFMNQRGSHGVVLANAGSSSVSINTATKLPDGRYDNKAGAGSFQVNDGKLTGTINARSVAVLYPD",
-        "start_mut_good": "ATAPSIKSMTILHAWNWSFNTLKHNMKDIHDAGYTAIQTSPIMQVKEGNQGDKSMSNWYWLYQPTSYHIGNRYLGTEQEFKEMCAAAEEYGIKVIVDAVLNHTTSDYAAISNEVKSIPNWTHGNTPIKNWSDRWDVTQNSLLGLYDWNTQNTQVQSYLKRFLDRALNDGADGFRFDAAKHIELPDDGSYGSQFWPNITNTSAEFQYGEILQDSVSRDAAYANYMDITASNYGHSIRSALKNRNLGVSNISHYAIDVSADKLVTWVESHDTYANDDEESTWMSDDDIRLGWAVIASRSGSTPLFFSRPEGGGNGVRFPGKSQIGDRGSALFEDQAITAVNRFHNVMAGQPEELSNPNGNNQIFMNQRGSHGVVLANAGSSSVSINTATKLPDGRYDNKAGAGSFQVNDGKLTGTINARSVAVLYAD", # noqa: E501
-        "start_mut_bad" : "LTAPSIKSGTILHAWNWSFNTLKHNMKDIHDAGYTAIQTSPINQVKEGNQGDKSMSNWYWLYQPTSYQIGNRYLGTEQEFKEMCAAAEEYGIKVIVDAVINHTTSDYAAISAEVKSIPNWTHGNTPIKNWSDRWDVTQNSLSGLYDWNTQNTQVQSYLKRFLDRALNDGADGFRFDAAKHIELPDDGSYGSQFWPNITNTSAEFQYGEILQDSVSRDAAYANYMDITASNYGHSIRSALKNRNLGVSNISHYAVDVSADKLVTWVESHDTYANDDEESTWMSDDDIRLGWAVIASRSGSTPLFFSRPEGGGNGVRFPGKSQIGDRGSALFEDQAITAVNRFHNVMAGQPEELSNPNGNNQIFMNQRGSHGVVLANAGSSSVSINTATKLPDGRYDNKAGAGSFQVNDGKLTGTINARSVAVLYPD",
-        "start_mut_superBad" : "LTAPSIKSGTILHAWNWSFNTLKHNMKDIHDAGYTAIQTSPINQVKEGNQGDKSMSNWYWLYQPTSYQIGNRYLGTEQEFKEMCAAAEEYGIKVIVDAVGNHTTSDYAAISNEVKSIPNWTHGNTPIKNWSDRWDVTQNSLSGLYDWNTQNTQVQSYVKRFLDRALNDGADGFRFDAAKHIELPDDGSYGSQFWPNITNTSAEFQYGEILQDSVSRDAAYANYMDVTASNYGHSIRSALKNRNLGVSNISHYAVDVSADKLVTWVESHDTYANDDEESTWMSDDDIRLGWAVIASRSGSTPLFFSRPEGGGNGVRFPGKSQIGDRGSALFEDQAITAVNRFHNVMAGQPEELSNPNGNNQIFMNQRGSHGVVLANAGSSSVSINTATKLPDGRYDNKAGAGSFQVNDGKLTGTINARSVAVLYPD"
-    }
 AAS = "ILVAGMFYWEDQNHCRKSTP"
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -65,6 +53,7 @@ def train_via_biotrainer(config_file_path):
     # You can now call the inference like this:
     # inferencer.from_embeddings(embeddings)
     return inferencer
+
 
 class TrainPipeline():
     def __init__(self, start_seq, alphabet, model, embedding_service, trust_radius, one_hot_switch, init_model=None): #init_model=None
@@ -165,29 +154,15 @@ class TrainPipeline():
 
     def policy_update(self):
         """update the policy-value net"""
-        #print("update the policy-value net")
-        mini_batch = random.sample(self.data_buffer, self.batch_size)
-        #print("mini_batch length:{}".format(len(mini_batch)))
-        state_batch = [data[0] for data in mini_batch]
-        #print("state_batch length:{}".format(len(state_batch)))
-        mcts_probs_batch = [data[1] for data in mini_batch]
-        #####
-        #print("mcts_probs_batch length:{}".format(len(mcts_probs_batch)))
-        #print("mcts_probs_batch:")
-        #print(mcts_probs_batch)
-        #print("mcts_probs_batch[0]:")
-        #print(mcts_probs_batch[0])
-        #print(len(mcts_probs_batch))
-        #####
-        winner_batch = [data[2] for data in mini_batch]
-        #print("winner_batch length:{}".format(len(winner_batch)))
-        #print("winner_batch:")
-        #print(winner_batch)
-        #print("winner_batch[0]:")
-        #print(winner_batch[0])
-        #print(len(winner_batch))
-        #####
         
+        mini_batch = random.sample(self.data_buffer, self.batch_size)
+        
+        state_batch = [data[0] for data in mini_batch]
+        
+        mcts_probs_batch = [data[1] for data in mini_batch]
+        
+        winner_batch = [data[2] for data in mini_batch]
+       
         old_probs, old_v = self.policy_value_net.policy_value(state_batch)
         for i in range(self.epochs):
             loss, entropy = self.policy_value_net.train_step(
@@ -249,10 +224,6 @@ class TrainPipeline():
                     print('time cost：',(endtime-starttime).seconds)
                     sys.exit(0)
 
-                #print("data buffer: ", len(self.data_buffer))
-                #print("batch_size: ", self.batch_size)
-                #print("buffer_no_extend: ", self.buffer_no_extend)
-
                 if len(self.data_buffer) > self.batch_size and self.buffer_no_extend == False:
                     if True:
                         loss, entropy = self.policy_update()
@@ -272,26 +243,25 @@ if __name__ == '__main__':
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
+    dataset_file_path = parse_file_path()
+    starting_sequence = extract_starting_seq(dataset_file_path)
+
     sequences_file = os.path.join(cwd, "oracle_training/sequences.fasta")
-    input_file = os.path.join(cwd, "data/PAB1.txt")
-    converter = FastaConverter(input_file=input_file, output_file=sequences_file)
+    converter = FastaConverter(input_file=dataset_file_path, output_file=sequences_file)
     converter.convert_to_fasta()
 
-    # embedding service for sequence_to_value predictions : the oracle
-    ###
 
     config_file = Path(os.path.join(cwd, "oracle_training/config.yml"))
     model = train_via_biotrainer(config_file)
 
     embedding_service: EmbeddingService = get_embedding_service(embedder_name="Rostlab/prot_t5_xl_uniref50", embeddings_file_path=None,
                                                             use_half_precision=False, device=device)
-    
-    # flag for using only emb in policy net training 
+        
+    # flag for using one-hots in policy net training 
     one_hot_switch = True
 
-    #print(f"Number of free parameters (oracle): {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
     training_pipeline = TrainPipeline(
-        starts["start_seq"], 
+        starting_sequence, 
         AAS,
         model,
         embedding_service,
@@ -299,6 +269,9 @@ if __name__ == '__main__':
         one_hot_switch = one_hot_switch
     )
     training_pipeline.run()
+
+
+   
     
     
     
