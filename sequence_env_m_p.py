@@ -55,7 +55,7 @@ def single_embed_for_oracle(seq_env, inputs):
             file.write(inputs)
         protocol = Protocol.sequence_to_value
         output_directory = Path(os.path.join(cwd, "single_emb/"))
-        folder_to_delete = output_directory / "residue_to_class"
+        folder_to_delete = output_directory / "sequence_to_class"
         embedding_file_path = seq_env.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
                                                                                                 protocol=protocol)
         embedding = seq_env.embedding_service.load_embeddings(embedding_file_path)
