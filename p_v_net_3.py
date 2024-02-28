@@ -64,6 +64,7 @@ def single_embed_for_policy_net(policy_net, seq):
     except KeyboardInterrupt:
         try:
             shutil.rmtree(folder_to_delete)
+            print("There was a keyboard interruption!")
         except Exception:
             pass
     return emb

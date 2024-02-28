@@ -29,7 +29,7 @@ def plot_polynomial_fit(data_file, score_column, degree=1):
    y_values = poly(x_values)
 
    # Create plot
-   plt.plot(x, scores, color='blue', label='Data')
+   plt.plot(x, scores, color='blue', label='Data', linewidth=0.3)
    plt.plot(x_values, y_values, color='red', label='Polynomial Fit (Degree {})'.format(degree))
 
    # Customize plot
@@ -38,18 +38,22 @@ def plot_polynomial_fit(data_file, score_column, degree=1):
    plt.title('Evolution of Scores')
 
    plt.xlim(0,4000)
-   plt.ylim(0,4)
-   y_ticks = np.arange(0, 4.1, 0.5)
+   plt.ylim(0,2)
+   y_ticks = np.arange(0, 2, 0.5)
    labels = [f"{tick}" for tick in y_ticks]
    plt.yticks(y_ticks, labels)
    
    plt.legend()
    plt.grid(True)
-   plt.show()
+   #plt.show()
+
+   fig = plt.gcf()
+   fig.set_size_inches(18.5, 10.5)
+   fig.savefig('/home/selindemirturk/PAB1_GFP_task_with_biotrainer/trial/trial_one_hot.pdf', format="pdf", dpi=400)
 
 if __name__ == '__main__':
     
-    data_file = '/home/selindemirturk/PAB1_GFP_task_with_biotrainer/trial/trial_one_hot_modified.csv'
+    data_file = '/home/selindemirturk/PAB1_GFP_task_with_biotrainer/trial/trial_one_hot.csv'
     score_column = 'pred_fit'
     degree = 1  # Adjust the degree as needed
 

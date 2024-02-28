@@ -49,15 +49,21 @@ def single_embed_for_oracle(seq_env, inputs):
 
     try:
         cwd = os.getcwd()
-        single_emb_fasta = os.path.join(cwd, "single_emb/single_emb.fasta")
+        if seq_env.one_hot_switch:
+            single_emb_fasta = os.path.join(cwd, "single_one_hot_emb/single_emb.fasta")
+        else:
+            single_emb_fasta = os.path.join(cwd, "single_emb/single_emb.fasta")
         with open(single_emb_fasta, 'w') as file:
             file.write('>Seq1 TARGET=Glob SET=train\n')
             file.write(inputs)
         protocol = Protocol.sequence_to_value
-        output_directory = Path(os.path.join(cwd, "single_emb/"))
+        if seq_env.one_hot_switch:
+            output_directory = Path(os.path.join(cwd, "single_one_hot_emb/"))
+        else:
+            output_directory = Path(os.path.join(cwd, "single_emb/"))
         folder_to_delete = output_directory / "sequence_to_value"
         embedding_file_path = seq_env.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
-                                                                                                protocol=protocol)
+                                                                                                        protocol=protocol)
         embedding = seq_env.embedding_service.load_embeddings(embedding_file_path)
         predictions = seq_env.model.from_embeddings(embedding)["mapped_predictions"]
         prediction = predictions["Seq1"]
@@ -65,10 +71,12 @@ def single_embed_for_oracle(seq_env, inputs):
     except KeyboardInterrupt:
         try:
             shutil.rmtree(folder_to_delete)
+            print("There was a keyboard interruption!")
         except Exception:
             pass
-
+            
     return prediction
+    
 
 
 
@@ -81,12 +89,17 @@ class Seq_env(object):
                  embedding_service,
                  starting_seq,
                  trust_radus,
+                 one_hot_switch
                  ):
 
         self.embedding_service = embedding_service
 
         self.max_moves = trust_radus
         self.move_count = 0
+
+        #### TODO: remove this later
+        self.one_hot_switch = one_hot_switch
+        ####
 
         self.seq_len = seq_len#self.width = int(kwargs.get('width', 8))
         self.vocab_size = len(alphabet)#self.height = int(kwargs.get('height', 8))
@@ -132,6 +145,7 @@ class Seq_env(object):
         with torch.no_grad():
             inputs = one_hot_to_string(self._state, AAS)
             outputs = single_embed_for_oracle(self, inputs)
+            #print("oputputs: ", outputs)
         if outputs:
             self._state_fitness = outputs
       
@@ -195,6 +209,7 @@ class Seq_env(object):
                     with torch.no_grad():
                         inputs = one_hot_to_string(self._state, AAS)
                         outputs = single_embed_for_oracle(self, inputs)
+                        #print("oputputs: ", outputs)
                     if outputs:
                         self._state_fitness = outputs
                 else:
@@ -210,6 +225,7 @@ class Seq_env(object):
                         inputs = one_hot_to_string(self._state, AAS)
                         inputs = one_hot_to_string(self._state, AAS)
                         outputs = single_embed_for_oracle(self, inputs)
+                        #print("oputputs: ", outputs)
                     if outputs:
                         self._state_fitness = outputs
                         self.playout_dict[combo] = outputs
@@ -295,7 +311,7 @@ class Mutate(object):
         states, mcts_probs, reward_z = [], [], [] #, current_players #, []
 
         i = 0
-        pbar = tqdm(total=1, desc="Selfplay")
+        #pbar = tqdm(total=1, desc="Selfplay")
 
         while True:
             move, move_probs, play_seqs, play_losses = mutater.get_action(self.Seq_env,
@@ -319,14 +335,14 @@ class Mutate(object):
                 print(state_string)
                 print()
 
-                pbar.total = i + 1
-                pbar.update(1)
+                #pbar.total = i + 1
+                #pbar.update(1)
 
             end = self.Seq_env.mutation_end()
             if end:
                 
-                pbar.total = i
-                pbar.close()
+                #pbar.total = i
+                #pbar.close()
 
                 mutater.reset_Mutater()
                 if is_shown:

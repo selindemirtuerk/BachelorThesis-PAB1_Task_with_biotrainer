@@ -67,7 +67,8 @@ class TrainPipeline():
             model,
             embedding_service,
             start_seq,
-            trust_radius)  #n_in_row=self.n_in_row
+            trust_radius,
+            one_hot_switch)  #n_in_row=self.n_in_row
         self.mutate = Mutate(self.seq_env)
         # training params
         self.learn_rate = 2e-3
