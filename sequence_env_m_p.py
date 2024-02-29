@@ -46,7 +46,7 @@ def one_hot_to_string(
     return "".join([alphabet[idx] for idx in residue_idxs])
 
 def single_embed_for_oracle(seq_env, inputs):
-
+    
     try:
         cwd = os.getcwd()
         if seq_env.one_hot_switch:
@@ -63,7 +63,7 @@ def single_embed_for_oracle(seq_env, inputs):
             output_directory = Path(os.path.join(cwd, "single_emb/"))
         folder_to_delete = output_directory / "sequence_to_value"
         embedding_file_path = seq_env.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
-                                                                                                        protocol=protocol)
+                                                                                                            protocol=protocol)
         embedding = seq_env.embedding_service.load_embeddings(embedding_file_path)
         predictions = seq_env.model.from_embeddings(embedding)["mapped_predictions"]
         prediction = predictions["Seq1"]
@@ -74,12 +74,17 @@ def single_embed_for_oracle(seq_env, inputs):
             print("There was a keyboard interruption!")
         except Exception:
             pass
-            
     return prediction
+
+    '''
+    protocol = Protocol.sequence_to_value
+    embedding_list = seq_env.embedding_service.compute_embeddings_from_list([inputs], protocol)
+    emb = embedding_list[0]
+    print("emb:", emb.shape)
+    return emb
+
+    '''
     
-
-
-
 class Seq_env(object):
     """sequence space for the env"""
     def __init__(self,
@@ -144,7 +149,12 @@ class Seq_env(object):
         one_hots = one_hots.to(torch.float32)
         with torch.no_grad():
             inputs = one_hot_to_string(self._state, AAS)
-            outputs = single_embed_for_oracle(self, inputs)
+            prediction = single_embed_for_oracle(self, inputs)
+            #embedding = single_embed_for_oracle(self, inputs)
+            #predictions = self.model.from_embeddings(embedding)["mapped_predictions"]
+            #_ , reward = next(iter(predictions.items()))
+            #outputs = reward
+            outputs = prediction
             #print("oputputs: ", outputs)
         if outputs:
             self._state_fitness = outputs
@@ -208,7 +218,12 @@ class Seq_env(object):
                     one_hots = one_hots.to(torch.float32)
                     with torch.no_grad():
                         inputs = one_hot_to_string(self._state, AAS)
-                        outputs = single_embed_for_oracle(self, inputs)
+                        prediction = single_embed_for_oracle(self, inputs)
+                        #embedding = single_embed_for_oracle(self, inputs)
+                        #predictions = self.model.from_embeddings(embedding)["mapped_predictions"]
+                        #_ , reward = next(iter(predictions.items()))
+                        #outputs = reward
+                        outputs = prediction
                         #print("oputputs: ", outputs)
                     if outputs:
                         self._state_fitness = outputs
@@ -223,8 +238,12 @@ class Seq_env(object):
                     one_hots = one_hots.to(torch.float32)
                     with torch.no_grad():
                         inputs = one_hot_to_string(self._state, AAS)
-                        inputs = one_hot_to_string(self._state, AAS)
-                        outputs = single_embed_for_oracle(self, inputs)
+                        prediction = single_embed_for_oracle(self, inputs)
+                        #embedding = single_embed_for_oracle(self, inputs)
+                        #predictions = self.model.from_embeddings(embedding)["mapped_predictions"]
+                        #_ , reward = next(iter(predictions.items()))
+                        #outputs = reward
+                        outputs = prediction
                         #print("oputputs: ", outputs)
                     if outputs:
                         self._state_fitness = outputs

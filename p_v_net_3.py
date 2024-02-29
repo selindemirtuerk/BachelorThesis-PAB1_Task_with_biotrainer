@@ -48,6 +48,7 @@ def set_learning_rate(optimizer, lr):
 
 def single_embed_for_policy_net(policy_net, seq):
 
+    
     try:
         cwd = os.getcwd()
         single_emb_fasta = os.path.join(cwd, "single_emb/single_emb_policy.fasta")
@@ -58,7 +59,7 @@ def single_embed_for_policy_net(policy_net, seq):
         output_directory = Path(os.path.join(cwd, "single_emb/"))
         folder_to_delete = output_directory / "residue_to_class"
         embedding_file_path = policy_net.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
-                                                                                        protocol=protocol)
+                                                                                            protocol=protocol)
         _ , emb = next(iter(policy_net.embedding_service.load_embeddings(embedding_file_path).items()))
         shutil.rmtree(folder_to_delete)
     except KeyboardInterrupt:
@@ -68,6 +69,14 @@ def single_embed_for_policy_net(policy_net, seq):
         except Exception:
             pass
     return emb
+
+    '''
+    protocol = Protocol.residue_to_class
+    embedding_list = policy_net.embedding_service.compute_embeddings_from_list([seq], protocol)
+    emb = embedding_list[0]
+    return emb
+    '''
+    
 
 class Net(nn.Module):
     """policy-value network module"""
