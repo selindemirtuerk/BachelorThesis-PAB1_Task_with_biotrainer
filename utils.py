@@ -2,14 +2,21 @@ import sys
 import os
 import pandas as pd
 
-def parse_file_path():
+def parse_arguments():
 
-    if len(sys.argv) <= 1:
-        raise ValueError("No file path provided. Please provide a file path as an argument.")
+    if len(sys.argv) <= 2:
+        raise ValueError("Please provide the dataset and the desired number of sequences to be generated!")
     
     input_file_path = sys.argv[1]
     # Convert the provided path to an absolute path
     absolute_file_path = os.path.abspath(input_file_path)
+
+    num_of_sequences = sys.argv[2]
+
+    try:
+        num_of_sequences = int(num_of_sequences)
+    except:
+        raise ValueError(f"The provided number of integers is not an integer value: {num_of_sequences}")
     
     # Check if the absolute file path exists and is a file
     if not os.path.isfile(absolute_file_path):
@@ -17,7 +24,7 @@ def parse_file_path():
     
     print(f"Using file: {absolute_file_path} as dataset for the oracle training")
 
-    return absolute_file_path
+    return absolute_file_path, num_of_sequences
 
 def extract_starting_seq(file_path):
     

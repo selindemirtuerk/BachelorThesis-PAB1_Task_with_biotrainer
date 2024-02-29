@@ -24,15 +24,18 @@ from biotrainer.inference import Inferencer
 from biotrainer.protocols import Protocol
 from biotrainer.embedders import EmbeddingService, get_embedding_service
 from fasta_converter import FastaConverter
-from utils import parse_file_path, extract_starting_seq
+from utils import parse_arguments, extract_starting_seq
 import datetime
 from pathlib import Path
 import copy
 import shutil
 from tqdm import tqdm
+from data_viz import DataVisualization
 
 root_data = Path(os.path.join(cwd, "data/"))
 root_code = Path(os.path.join(cwd, "trial/"))
+
+root_results = Path(os.path.join(cwd, "results"))
 
 AAS = "ILVAGMFYWEDQNHCRKSTP"
 
@@ -220,7 +223,7 @@ class TrainPipeline():
                     m_p_seqs = np.array(list(self.seq_env.playout_dict.keys()))
                     df_m_p = pd.DataFrame(
                         {"sequence": m_p_seqs, "pred_fit": m_p_fitness})
-                    df_m_p.to_csv( root_code / "trial_emb_modified_8000.csv",index=False)
+                    df_m_p.to_csv( root_results / "generated_sequences_and_scores.csv",index=False)
                     endtime = datetime.datetime.now() 
                     print('time cost：',(endtime-starttime).seconds)
                     sys.exit(0)
@@ -244,7 +247,7 @@ if __name__ == '__main__':
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    dataset_file_path = parse_file_path()
+    dataset_file_path, num_of_sequences = parse_arguments()
     starting_sequence = extract_starting_seq(dataset_file_path)
 
     sequences_file = os.path.join(cwd, "oracle_training/sequences.fasta")
@@ -270,6 +273,13 @@ if __name__ == '__main__':
         one_hot_switch = one_hot_switch
     )
     training_pipeline.run()
+    
+    output_dir = Path(os.path.join(cwd, "results"))
+    results_file_path = output_dir / "generated_sequences_and_scores.csv"
+    data_visualiser = DataVisualization(results_file_path, output_dir)
+    data_visualiser.create_data_visualisations(num_of_sequences, dataset_file_path, results_file_path)
+   
+    
 
 
    
