@@ -2,7 +2,7 @@
 
 ## Evoplay with Biotrainer Integration
 
-This is the repository for the Barchelor's Degree Thesis/Project carried out during the 2023/24 Winter Semester by Selin Demirtürk.
+This is the repository for the Bachelor's Degree Thesis/Project carried out during the 2023/24 Winter Semester by Selin Demirtürk.
 
 It provides a modified version of [EvoPlay](https://github.com/melobio/EvoPlay)'s PAB1_GFP_task, which was first published in [Nature](https://www.nature.com/articles/s42256-023-00691-9). This version is integrated with the open-source tool [BioTrainer](https://github.com/sacdallago/biotrainer), simplifying the process of training machine learning models for biological applications. Its main purpose is to make the use of EvoPlay more accessible to individuals with little to no background in machine learning.
 
