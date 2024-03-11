@@ -48,76 +48,14 @@ def set_learning_rate(optimizer, lr):
 
 def single_embed_for_policy_net(policy_net, seq):
 
-    
-    try:
-        cwd = os.getcwd()
-        single_emb_fasta = os.path.join(cwd, "single_emb/single_emb_policy.fasta")
-        with open(single_emb_fasta, 'w') as file:
-            file.write('>Seq1 TARGET=Glob SET=train\n')
-            file.write(seq)
-        protocol = Protocol.residue_to_class
-        output_directory = Path(os.path.join(cwd, "single_emb/"))
-        folder_to_delete = output_directory / "residue_to_class"
-        embedding_file_path = policy_net.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
-                                                                                            protocol=protocol)
-        _ , emb = next(iter(policy_net.embedding_service.load_embeddings(embedding_file_path).items()))
-        shutil.rmtree(folder_to_delete)
-    except KeyboardInterrupt:
-        try:
-            shutil.rmtree(folder_to_delete)
-            print("There was a keyboard interruption!")
-        except Exception:
-            pass
-    return emb
-
-    '''
     protocol = Protocol.residue_to_class
     embedding_list = policy_net.embedding_service.compute_embeddings_from_list([seq], protocol)
-    emb = embedding_list[0]
-    return emb
-    '''
-    
+    return embedding_list[0]
 
-class Net(nn.Module):
+class Net_emb(nn.Module):
     """policy-value network module"""
     def __init__(self, board_width, board_height):
-        super(Net, self).__init__()
-
-        self.board_width = board_width # sequence length
-        self.board_height = board_height # alphabet length (20)
-        # common layers
-        self.conv1 = nn.Conv1d(20, 32, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv1d(32, 64, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv1d(64, 128, kernel_size=3, padding=1)
-        # action policy layers
-        self.act_conv1 = nn.Conv1d(128, 80, kernel_size=3, padding=1)
-        self.act_fc1 = nn.Linear(4*board_width*board_height,
-                                 board_width*board_height)
-        # state value layers
-        self.val_conv1 = nn.Conv1d(128, 20, kernel_size=3, padding=1)
-        self.val_fc1 = nn.Linear(board_width*board_height, 128)
-        self.val_fc2 = nn.Linear(128, 1)
-
-    def forward(self, state_input):
-        # common layers
-        x = F.relu(self.conv1(state_input))
-        x = F.relu(self.conv2(x))
-        x = F.relu(self.conv3(x))
-        # action policy layers
-        x_act = F.relu(self.act_conv1(x))
-        x_act = x_act.view(-1, 4*self.board_width*self.board_height)
-        x_act = F.log_softmax(self.act_fc1(x_act))
-        # state value layers
-        x_val = F.relu(self.val_conv1(x))
-        x_val = x_val.view(-1, self.board_width*self.board_height)
-        x_val = F.relu(self.val_fc1(x_val))
-        x_val = torch.tanh(self.val_fc2(x_val)) # F.tanh
-        return x_act, x_val
-
-class Net2_emb(nn.Module):
-    """policy-value network module"""
-    def __init__(self, board_width, board_height):
-        super(Net2_emb, self).__init__()
+        super(Net_emb, self).__init__()
 
         self.board_width = board_width # sequence length
         self.board_height = board_height # alphabet length (20)
@@ -137,41 +75,27 @@ class Net2_emb(nn.Module):
 
     def forward(self, state_input):
         # common layers
-        #print("state_input:", state_input.shape)
         x = F.relu(self.linear_project(state_input))
-        #x = F.relu(self.conv1(state_input))
-        #print("x:", x.shape)
         x = x.permute(0,2,1)
-        #print("x:", x.shape)
         x = F.relu(self.conv1(x))
-        #print("x:", x.shape)
         x = F.relu(self.conv2(x))
-        #print("x:", x.shape)
         x = F.relu(self.conv3(x))
-        #print("x:", x.shape)
         # action policy layers
         x_act = F.relu(self.act_conv1(x))
-        #print("x_act:", x_act.shape)
         x_act = x_act.view(-1, self.board_width)
-        #print("x:", x_act.shape)
         x_act = F.log_softmax(self.act_fc1(x_act))
-        #print("x:", x_act.shape)
         # state value layers
         x_val = F.relu(self.val_conv1(x))
-        #print("x:", x_val.shape)
         x_val = x_val.view(-1, self.board_width)
-        #print("x:", x_val.shape)
         x_val = F.relu(self.val_fc1(x_val))
-        #print("x:", x_val.shape)
         x_val = torch.tanh(self.val_fc2(x_val))
-        #print("x:", x_val.shape) # F.tanh
         return x_act, x_val
     
-class Net2_one_hot(nn.Module):
+class Net_one_hot(nn.Module):
     """policy-value network module"""
     #print("Net2_one_hot is used!")
     def __init__(self, board_width, board_height):
-        super(Net2_one_hot, self).__init__()
+        super(Net_one_hot, self).__init__()
 
         self.board_width = board_width # sequence length
         self.board_height = board_height # alphabet length (20)
@@ -191,32 +115,17 @@ class Net2_one_hot(nn.Module):
 
     def forward(self, state_input):
         # common layers
-        #print("state_input:", state_input.shape)
-        #x = F.relu(self.linear_project(state_input))
         x = F.relu(self.conv1(state_input))
-        #print("x:", x.shape)
-        #x = x.permute(0,2,1)
-        #print("x:", x.shape)
-        #x = F.relu(self.conv1(x))
-        #print("x:", x.shape)
         x = F.relu(self.conv2(x))
-        #print("x:", x.shape)
         x = F.relu(self.conv3(x))
-        #print("x:", x.shape)
         # action policy layers
         x_act = F.relu(self.act_conv1(x))
-        #print("x_act:", x_act.shape)
         x_act = x_act.view(-1, self.board_width)
-        #print("x:", x_act.shape)
         x_act = F.log_softmax(self.act_fc1(x_act))
-        #print("x:", x_act.shape)
         # state value layers
         x_val = F.relu(self.val_conv1(x))
-        #print("x:", x_val.shape)
         x_val = x_val.view(-1, self.board_width)
-        #print("x:", x_val.shape)
         x_val = F.relu(self.val_fc1(x_val))
-        #print("x:", x_val.shape)
         x_val = torch.tanh(self.val_fc2(x_val))
         return x_act, x_val
 
@@ -234,14 +143,14 @@ class PolicyValueNet():
         # the policy value net module
         if self.use_gpu:
             if self.one_hot_switch:
-                self.policy_value_net = Net2_one_hot(board_width, board_height).cuda()
+                self.policy_value_net = Net_one_hot(board_width, board_height).cuda()
             else:
-                self.policy_value_net = Net2_emb(board_width, board_height).cuda()
+                self.policy_value_net = Net_emb(board_width, board_height).cuda()
         else:
             if self.one_hot_switch:
-                self.policy_value_net = Net2_one_hot(board_width, board_height)
+                self.policy_value_net = Net_one_hot(board_width, board_height)
             else:
-                self.policy_value_net = Net2_emb(board_width, board_height)
+                self.policy_value_net = Net_emb(board_width, board_height)
 
         self.optimizer = optim.Adam(self.policy_value_net.parameters(),
                                     weight_decay=self.l2_const)
@@ -258,9 +167,9 @@ class PolicyValueNet():
             seq = one_hot_to_string(one_hot, AAS)
             emb = single_embed_for_policy_net(self, seq)
             if self.use_gpu:
-                emb = emb.to(torch.float32).unsqueeze(dim=0).cuda()
+                emb = torch.from_numpy(emb).to(torch.float32).unsqueeze(dim=0).cuda()
             else:
-                emb = emb.to(torch.float32).unsqueeze(dim=0)
+                emb = torch.from_numpy(emb).to(torch.float32).unsqueeze(dim=0)
             embs.append(emb)
         return torch.cat(embs,dim=0)
 

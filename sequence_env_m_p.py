@@ -46,44 +46,9 @@ def one_hot_to_string(
     return "".join([alphabet[idx] for idx in residue_idxs])
 
 def single_embed_for_oracle(seq_env, inputs):
-    
-    try:
-        cwd = os.getcwd()
-        if seq_env.one_hot_switch:
-            single_emb_fasta = os.path.join(cwd, "single_one_hot_emb/single_emb.fasta")
-        else:
-            single_emb_fasta = os.path.join(cwd, "single_emb/single_emb.fasta")
-        with open(single_emb_fasta, 'w') as file:
-            file.write('>Seq1 TARGET=Glob SET=train\n')
-            file.write(inputs)
-        protocol = Protocol.sequence_to_value
-        if seq_env.one_hot_switch:
-            output_directory = Path(os.path.join(cwd, "single_one_hot_emb/"))
-        else:
-            output_directory = Path(os.path.join(cwd, "single_emb/"))
-        folder_to_delete = output_directory / "sequence_to_value"
-        embedding_file_path = seq_env.embedding_service.compute_embeddings(sequence_file=single_emb_fasta, output_dir=output_directory,
-                                                                                                            protocol=protocol)
-        embedding = seq_env.embedding_service.load_embeddings(embedding_file_path)
-        predictions = seq_env.model.from_embeddings(embedding)["mapped_predictions"]
-        prediction = predictions["Seq1"]
-        shutil.rmtree(folder_to_delete)
-    except KeyboardInterrupt:
-        try:
-            shutil.rmtree(folder_to_delete)
-            print("There was a keyboard interruption!")
-        except Exception:
-            pass
-    return prediction
-
-    '''
     protocol = Protocol.sequence_to_value
     embedding_list = seq_env.embedding_service.compute_embeddings_from_list([inputs], protocol)
-    emb = embedding_list[0]
-    print("emb:", emb.shape)
-    return emb
-
-    '''
+    return embedding_list
     
 class Seq_env(object):
     """sequence space for the env"""
@@ -94,7 +59,6 @@ class Seq_env(object):
                  embedding_service,
                  starting_seq,
                  trust_radus,
-                 one_hot_switch
                  ):
 
         self.embedding_service = embedding_service
@@ -102,12 +66,8 @@ class Seq_env(object):
         self.max_moves = trust_radus
         self.move_count = 0
 
-        #### TODO: remove this later
-        self.one_hot_switch = one_hot_switch
-        ####
-
-        self.seq_len = seq_len#self.width = int(kwargs.get('width', 8))
-        self.vocab_size = len(alphabet)#self.height = int(kwargs.get('height', 8))
+        self.seq_len = seq_len
+        self.vocab_size = len(alphabet)
 
         self.alphabet = alphabet
 
@@ -140,7 +100,6 @@ class Seq_env(object):
         combo = one_hot_to_string(self._state, AAS)
         self.start_seq_exclude_list.append(combo)
         self.init_combo = combo
-        #
         if combo not in self.episode_seqs:
             self.episode_seqs.append(combo)
       
@@ -149,13 +108,10 @@ class Seq_env(object):
         one_hots = one_hots.to(torch.float32)
         with torch.no_grad():
             inputs = one_hot_to_string(self._state, AAS)
-            prediction = single_embed_for_oracle(self, inputs)
-            #embedding = single_embed_for_oracle(self, inputs)
-            #predictions = self.model.from_embeddings(embedding)["mapped_predictions"]
-            #_ , reward = next(iter(predictions.items()))
-            #outputs = reward
-            outputs = prediction
-            #print("oputputs: ", outputs)
+            embedding = single_embed_for_oracle(self, inputs)
+            predictions = self.model.from_embeddings(embedding)["mapped_predictions"]
+            _ , reward = next(iter(predictions.items()))
+            outputs = reward
         if outputs:
             self._state_fitness = outputs
       
@@ -218,13 +174,10 @@ class Seq_env(object):
                     one_hots = one_hots.to(torch.float32)
                     with torch.no_grad():
                         inputs = one_hot_to_string(self._state, AAS)
-                        prediction = single_embed_for_oracle(self, inputs)
-                        #embedding = single_embed_for_oracle(self, inputs)
-                        #predictions = self.model.from_embeddings(embedding)["mapped_predictions"]
-                        #_ , reward = next(iter(predictions.items()))
-                        #outputs = reward
-                        outputs = prediction
-                        #print("oputputs: ", outputs)
+                        embedding = single_embed_for_oracle(self, inputs)
+                        predictions = self.model.from_embeddings(embedding)["mapped_predictions"]
+                        _ , reward = next(iter(predictions.items()))
+                        outputs = reward
                     if outputs:
                         self._state_fitness = outputs
                 else:
@@ -238,13 +191,10 @@ class Seq_env(object):
                     one_hots = one_hots.to(torch.float32)
                     with torch.no_grad():
                         inputs = one_hot_to_string(self._state, AAS)
-                        prediction = single_embed_for_oracle(self, inputs)
-                        #embedding = single_embed_for_oracle(self, inputs)
-                        #predictions = self.model.from_embeddings(embedding)["mapped_predictions"]
-                        #_ , reward = next(iter(predictions.items()))
-                        #outputs = reward
-                        outputs = prediction
-                        #print("oputputs: ", outputs)
+                        embedding = single_embed_for_oracle(self, inputs)
+                        predictions = self.model.from_embeddings(embedding)["mapped_predictions"]
+                        _ , reward = next(iter(predictions.items()))
+                        outputs = reward
                     if outputs:
                         self._state_fitness = outputs
                         self.playout_dict[combo] = outputs
@@ -258,7 +208,7 @@ class Seq_env(object):
             self._state_fitness = 0.0
         else:
             self.episode_seqs.append(current_seq)
-        if self._state_fitness > self.previous_fitness:  # and not repeated_seq_ocurr:  # 0.6* 0.75*
+        if self._state_fitness > self.previous_fitness: 
 
             self.init_state = copy.deepcopy(self._state)
             self.init_state_count = 0
@@ -327,10 +277,7 @@ class Mutate(object):
         fit_result = []
         play_seqs_list = []
         play_fit_list = []
-        states, mcts_probs, reward_z = [], [], [] #, current_players #, []
-
-        i = 0
-        #pbar = tqdm(total=1, desc="Selfplay")
+        states, mcts_probs, reward_z = [], [], []
 
         while True:
             move, move_probs, play_seqs, play_losses = mutater.get_action(self.Seq_env,
@@ -338,7 +285,6 @@ class Mutate(object):
                                                  return_prob=1)
             self.Seq_env.playout_dict.update(mutater.m_p_dict)
             if move:
-                # store the data
                 states.append(self.Seq_env.current_state())
                 mcts_probs.append(move_probs)
                 reward_z.append(self.Seq_env._state_fitness)
@@ -354,14 +300,8 @@ class Mutate(object):
                 print(state_string)
                 print()
 
-                #pbar.total = i + 1
-                #pbar.update(1)
-
             end = self.Seq_env.mutation_end()
             if end:
-                
-                #pbar.total = i
-                #pbar.close()
 
                 mutater.reset_Mutater()
                 if is_shown:

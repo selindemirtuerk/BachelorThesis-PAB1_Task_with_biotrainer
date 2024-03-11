@@ -218,12 +218,12 @@ class TrainPipeline():
                 print("batch i:{}, episode_len:{}".format(
                         i+1, self.episode_len))
 
-                if len(self.seq_env.playout_dict.keys()) >= 8000:
+                if len(self.seq_env.playout_dict.keys()) >= 10000:
                     m_p_fitness = np.array(list(self.seq_env.playout_dict.values()))
                     m_p_seqs = np.array(list(self.seq_env.playout_dict.keys()))
                     df_m_p = pd.DataFrame(
                         {"sequence": m_p_seqs, "pred_fit": m_p_fitness})
-                    df_m_p.to_csv( root_results / "generated_sequences_and_scores.csv",index=False)
+                    df_m_p.to_csv( root_code / "generated_sequences_and_scores.csv", index=False)
                     endtime = datetime.datetime.now() 
                     print('time cost：',(endtime-starttime).seconds)
                     sys.exit(0)
@@ -253,7 +253,6 @@ if __name__ == '__main__':
     sequences_file = os.path.join(cwd, "oracle_training/sequences.fasta")
     converter = FastaConverter(input_file=dataset_file_path, output_file=sequences_file)
     converter.convert_to_fasta()
-
 
     config_file = Path(os.path.join(cwd, "oracle_training/config.yml"))
     model = train_via_biotrainer(config_file)
