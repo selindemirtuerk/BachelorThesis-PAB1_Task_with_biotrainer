@@ -32,11 +32,6 @@ import shutil
 from tqdm import tqdm
 from data_viz import DataVisualization
 
-root_data = Path(os.path.join(cwd, "data/"))
-root_code = Path(os.path.join(cwd, "trial/"))
-
-root_results = Path(os.path.join(cwd, "results"))
-
 AAS = "ILVAGMFYWEDQNHCRKSTP"
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -208,7 +203,7 @@ class TrainPipeline():
         return loss, entropy
 
 
-    def run(self):
+    def run(self, output_dir):
         """run the training pipeline"""
         starttime = datetime.datetime.now() 
         #part = 2
@@ -223,7 +218,7 @@ class TrainPipeline():
                     m_p_seqs = np.array(list(self.seq_env.playout_dict.keys()))
                     df_m_p = pd.DataFrame(
                         {"sequence": m_p_seqs, "pred_fit": m_p_fitness})
-                    df_m_p.to_csv( root_code / "generated_sequences_and_scores.csv", index=False)
+                    df_m_p.to_csv( output_dir / "generated_sequences_and_scores.csv", index=False)
                     endtime = datetime.datetime.now() 
                     print('time cost：',(endtime-starttime).seconds)
                     sys.exit(0)
@@ -247,16 +242,25 @@ if __name__ == '__main__':
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    dataset_file_path, num_of_sequences = parse_arguments()
+    # argument parsing for the dataset, num of desired generated sequences and the output directory
+    dataset_file_path, num_of_sequences, output_dir = parse_arguments()
+    #extract a starting sequence from the given dataset
     starting_sequence = extract_starting_seq(dataset_file_path)
 
+    #create output directory
+    output_dir = os.path.join(cwd, output_dir) 
+    os.mkdir(output_dir)
+
+    #biotrainer requires the fasta format so sequences file is first converted into a fasta file
     sequences_file = os.path.join(cwd, "oracle_training/sequences.fasta")
     converter = FastaConverter(input_file=dataset_file_path, output_file=sequences_file)
     converter.convert_to_fasta()
 
+    #get config file for oracle training
     config_file = Path(os.path.join(cwd, "oracle_training/config.yml"))
     model = train_via_biotrainer(config_file)
 
+    #get emebedding service for creating embeddings for the oracle and the policy value net
     embedding_service: EmbeddingService = get_embedding_service(embedder_name="Rostlab/prot_t5_xl_uniref50", embeddings_file_path=None,
                                                             use_half_precision=False, device=device)
         
@@ -271,9 +275,9 @@ if __name__ == '__main__':
         trust_radius=100,
         one_hot_switch = one_hot_switch
     )
-    training_pipeline.run()
-    
-    output_dir = Path(os.path.join(cwd, "results"))
+    training_pipeline.run(output_dir)
+
+    #add the evolution of scores, the distribution of scores and the top 10 sequences of the run to output directory
     results_file_path = output_dir / "generated_sequences_and_scores.csv"
     data_visualiser = DataVisualization(results_file_path, output_dir)
     data_visualiser.create_data_visualisations(num_of_sequences, dataset_file_path, results_file_path)
