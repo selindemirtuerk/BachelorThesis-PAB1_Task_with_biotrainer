@@ -26,14 +26,14 @@ This repository contains all the code developed for the thesis, as well as a lin
 You will need to provide the path to your dataset and number of desired sequences in order to run the script. Supported file formats are .txt, .csv, .tsv and .fasta
 
 ```bash
-cd PAB1_GFP_Task_with_biotrainer/
+# change to working directory 
 python train_m_single_m_p_pab1.py /path/to/your/dataset number_of_sequences_to_generate name_of_output_directory
 
 ```
 * **Example Usage**.
 
 ```bash
-cd PAB1_GFP_Task_with_biotrainer/
+# change to working directory
 python train_m_single_m_p_pab1.py /examples/data/PAB1.txt 10000 output
 ```
 
