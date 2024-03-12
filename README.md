@@ -17,7 +17,7 @@ This repository contains all the code developed for the thesis, as well as a lin
 
 **Neural Networks:**
 
-* **Predictor Neural Network**. Generated with the help of [Biotrainer](https://github.com/sacdallago/biotrainer) using a custom [config_file](https://github.com/selindemirtuerk/BachelorThesis-PAB1_Task_with_biotrainer/blob/main/oracle_training/config.yml)
+* **Predictor Neural Network**. Generated with the help of [Biotrainer](https://github.com/sacdallago/biotrainer) using a custom [configuration file](https://github.com/selindemirtuerk/BachelorThesis-PAB1_Task_with_biotrainer/blob/main/oracle_training/config.yml)
 
 * **Policy Value Neural Network**. Provided by [RostLab](https://www.cs.cit.tum.de/en/bio/home/)
 
