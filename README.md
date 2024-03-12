@@ -12,7 +12,7 @@ This repository contains all the code developed for the thesis, as well as a lin
 
 **Code:**
 
-* **Base Code of the Task**. Obtained from the [official repository](https://github.com/melobio/EvoPlay/tree/main/code/PAB1_GFP_task), mantained by model's authors.
+* **Base Code of the Task**. Obtained from the [official repository](https://github.com/melobio/EvoPlay/tree/main/code/PAB1_GFP_task), maintained by model's authors.
 * **Biotrainer**. Obtained from the [official repository](https://github.com/sacdallago/biotrainer)
 
 **Neural Networks:**
@@ -30,7 +30,6 @@ cd PAB1_GFP_Task_with_biotrainer/
 python train_m_single_m_p_pab1.py /path/to/your/dataset number_of_sequences_to_generate name_of_output_directory
 
 ```
-
 * **Example**.
 
 ```bash
@@ -40,4 +39,7 @@ python train_m_single_m_p_pab1.py /examples/data/PAB1.txt 10000 output
 
 ## Results
 
+The pipeline produces a csv file containing the desired number of sequences and their respective scores, similar to the original EvoPlay PAB1-GFP-Task. Additionally, we provide a file highlighting the top 10 sequences generated during the execution, a graph depicting the evolutionary trajectory of the scores associated with the generated sequences, another graph contrasting the distribution of the scores of the generated sequences with those of the original dataset.
+
+ 
 
