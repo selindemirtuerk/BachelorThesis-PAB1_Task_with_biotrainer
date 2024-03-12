@@ -30,7 +30,7 @@ cd PAB1_GFP_Task_with_biotrainer/
 python train_m_single_m_p_pab1.py /path/to/your/dataset number_of_sequences_to_generate name_of_output_directory
 
 ```
-* **Example**.
+* **Example Usage**.
 
 ```bash
 cd PAB1_GFP_Task_with_biotrainer/
