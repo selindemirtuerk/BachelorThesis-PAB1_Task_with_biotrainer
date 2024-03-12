@@ -3,6 +3,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import csv
+import shutil
 
 class FastaConverter:
 
@@ -17,6 +18,8 @@ class FastaConverter:
             self._convert_from_csv()
         elif self.input_file.endswith(".tsv"):
             self._convert_from_tsv()
+        elif self.input_file.endswith(".fasta"):
+            shutil.copyfile(self.input_file, self.output_file)
         else:
             print("Unsupported file format. Please provide a TXT or CSV file.")
 
