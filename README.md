@@ -8,7 +8,7 @@ It provides a modified version of [EvoPlay](https://github.com/melobio/EvoPlay)'
 
 ## Code and Neural Networks
 
-This repository contains all the code developed for the thesis, as well as a link to the the raw results obtained and the trained and used models. Following is the code not implemented by the author and the neural networks used are referenced.
+This repository contains all the code developed for the thesis, as well as a link to the the raw results obtained and the trained and used neural networks. Following is the code not implemented by the author and the neural networks used are referenced.
 
 **Code:**
 
