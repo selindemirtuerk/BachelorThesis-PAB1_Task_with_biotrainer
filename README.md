@@ -34,7 +34,7 @@ conda env create -f /environment/environment.yml
 
 **Poetry:**
 
-Alternatively you can use the poetry files in the working directory for the environment set-up
+Alternatively you can use the poetry files in the base directory for the environment set-up
 
 1. Make sure you have [poetry](https://python-poetry.org/) installed: 
 ```bash
@@ -43,7 +43,8 @@ curl -sSL https://install.python-poetry.org/ | python3 - --version 1.4.2
 
 2. Install dependencies `poetry`:
 ```bash
-# In the base directory:
+# In the base directory
+cd poetry_environment
 poetry install
 ```
 
