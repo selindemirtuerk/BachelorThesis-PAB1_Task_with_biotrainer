@@ -52,10 +52,11 @@ def single_embed_for_policy_net(policy_net, seq):
     embedding_list = policy_net.embedding_service.compute_embeddings_from_list([seq], protocol)
     return embedding_list[0]
 
-class Net_emb(nn.Module):
+
+class Net2_emb(nn.Module):
     """policy-value network module"""
     def __init__(self, board_width, board_height):
-        super(Net_emb, self).__init__()
+        super(Net2_emb, self).__init__()
 
         self.board_width = board_width # sequence length
         self.board_height = board_height # alphabet length (20)
@@ -91,16 +92,15 @@ class Net_emb(nn.Module):
         x_val = torch.tanh(self.val_fc2(x_val))
         return x_act, x_val
     
-class Net_one_hot(nn.Module):
+class Net2_one_hot(nn.Module):
     """policy-value network module"""
     #print("Net2_one_hot is used!")
     def __init__(self, board_width, board_height):
-        super(Net_one_hot, self).__init__()
+        super(Net2_one_hot, self).__init__()
 
         self.board_width = board_width # sequence length
         self.board_height = board_height # alphabet length (20)
         # common layers
-        #self.linear_project = nn.Linear(1024, 32)
         self.conv1 = nn.Conv1d(20, 32, kernel_size=7, padding=3) #32
         self.conv2 = nn.Conv1d(32, 32, kernel_size=7, padding=3)
         self.conv3 = nn.Conv1d(32, 32, kernel_size=7, padding=3)
@@ -143,14 +143,14 @@ class PolicyValueNet():
         # the policy value net module
         if self.use_gpu:
             if self.one_hot_switch:
-                self.policy_value_net = Net_one_hot(board_width, board_height).cuda()
+                self.policy_value_net = Net2_one_hot(board_width, board_height).cuda()
             else:
-                self.policy_value_net = Net_emb(board_width, board_height).cuda()
+                self.policy_value_net = Net2_emb(board_width, board_height).cuda()
         else:
             if self.one_hot_switch:
-                self.policy_value_net = Net_one_hot(board_width, board_height)
+                self.policy_value_net = Net2_one_hot(board_width, board_height)
             else:
-                self.policy_value_net = Net_emb(board_width, board_height)
+                self.policy_value_net = Net2_emb(board_width, board_height)
 
         self.optimizer = optim.Adam(self.policy_value_net.parameters(),
                                     weight_decay=self.l2_const)
