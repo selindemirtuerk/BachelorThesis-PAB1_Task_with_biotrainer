@@ -6,7 +6,7 @@ This is the repository for the Bachelor's Degree Thesis/Project carried out duri
 
 It provides a modified version of [EvoPlay](https://github.com/melobio/EvoPlay)'s PAB1_GFP_task, which was first published in [Nature](https://www.nature.com/articles/s42256-023-00691-9). This version is integrated with the open-source tool [BioTrainer](https://github.com/sacdallago/biotrainer), simplifying the process of training machine learning models for biological applications. Its main purpose is to make the use of EvoPlay more accessible to individuals with little to no background in machine learning. Here we focused solely on the PAB1-Task.
 
-## Code and Models
+## Code and Neural Networks
 
 This repository contains all the code developed for the thesis, as well as a link to the the raw results obtained and the trained and used models. Following is the code not implemented by the author and the neural networks used are referenced.
 
