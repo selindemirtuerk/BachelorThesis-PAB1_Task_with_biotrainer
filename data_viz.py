@@ -7,7 +7,6 @@ class DataVisualization:
     def __init__(self, result_csv, output_dir):
         self.data = pd.read_csv(result_csv)
         self.output_dir = output_dir
-        os.makedirs("results", exist_ok=True)
 
     def extract_score_column(self, file_path):
         """

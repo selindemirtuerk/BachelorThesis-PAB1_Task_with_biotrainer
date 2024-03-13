@@ -65,8 +65,7 @@ class TrainPipeline():
             model,
             embedding_service,
             start_seq,
-            trust_radius,
-            one_hot_switch)  #n_in_row=self.n_in_row
+            trust_radius)  #n_in_row=self.n_in_row
         self.mutate = Mutate(self.seq_env)
         # training params
         self.learn_rate = 2e-3
@@ -243,13 +242,15 @@ if __name__ == '__main__':
     torch.backends.cudnn.benchmark = False
 
     # argument parsing for the dataset, num of desired generated sequences and the output directory
-    dataset_file_path, num_of_sequences, output_dir = parse_arguments()
+    dataset_file_path, num_of_sequences, output_dir_name = parse_arguments()
     #extract a starting sequence from the given dataset
     starting_sequence = extract_starting_seq(dataset_file_path)
 
     #create output directory
-    output_dir = os.path.join(cwd, output_dir) 
-    os.mkdir(output_dir)
+    output_dir = os.path.join(cwd, output_dir_name)
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
+    output_dir = Path(output_dir)
 
     #biotrainer requires the fasta format so sequences file is first converted into a fasta file
     sequences_file = os.path.join(cwd, "oracle_training/sequences.fasta")
@@ -278,6 +279,7 @@ if __name__ == '__main__':
     training_pipeline.run(output_dir)
 
     #add the evolution of scores, the distribution of scores and the top 10 sequences of the run to output directory
+    output_dir = Path(os.path.join(cwd, output_dir_name))
     results_file_path = output_dir / "generated_sequences_and_scores.csv"
     data_visualiser = DataVisualization(results_file_path, output_dir)
     data_visualiser.create_data_visualisations(num_of_sequences, dataset_file_path, results_file_path)
