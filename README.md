@@ -21,20 +21,55 @@ This repository contains all the code developed for the thesis, as well as a lin
 
 * **Policy Value Neural Network**. Provided by [RostLab](https://www.cs.cit.tum.de/en/bio/home/)
 
-## Usage
+## Environment Requirements
 
-You will need to provide the path to your dataset and number of desired sequences in order to run the script. Supported file formats are .txt, .csv, .tsv and .fasta
+**Conda:**
+
+An environment yml file for dependencies can be found [here](https://github.com/selindemirtuerk/BachelorThesis-PAB1_Task_with_biotrainer/blob/main/environment/environment.yml)
+
+```bash
+#change to working directory
+conda env create -f /environment/environment.yml
+```
+
+**Poetry:**
+
+Alternatively you can use the poetry files in the working directory for the environment set-up
+
+1. Make sure you have [poetry](https://python-poetry.org/) installed: 
+```bash
+curl -sSL https://install.python-poetry.org/ | python3 - --version 1.4.2
+```
+
+2. Install dependencies `poetry`:
+```bash
+# In the base directory:
+poetry install
+```
+
+## Running
+
+You will need to provide the path to your dataset, number of desired sequences and the name to your desired output directory in order to run the script. Supported file formats are .txt, .csv, .tsv and .fasta
+
+1. With Conda:
 
 ```bash
 # change to working directory 
 python train_m_single_m_p_pab1.py /path/to/your/dataset number_of_sequences_to_generate name_of_output_directory
-
 ```
+
 * **Example Usage**.
 
 ```bash
 # change to working directory
 python train_m_single_m_p_pab1.py /examples/data/PAB1.txt 10000 output
+```
+
+2. With Poetry:
+
+```bash
+# change to working directory 
+poetry python train_m_single_m_p_pab1.py /path/to/your/dataset number_of_sequences_to_generate name_of_output_directory
 ```
 
 ## Results
