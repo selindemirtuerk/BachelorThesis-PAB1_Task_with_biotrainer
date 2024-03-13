@@ -72,7 +72,7 @@ poetry python train_m_single_m_p_pab1.py <dataset_path> <num_sequences> <output_
 
 ## Results
 
-The pipeline produces a csv file containing the desired number of sequences and their respective scores, similar to the original EvoPlay PAB1-GFP-Task. Additionally, we provide a file highlighting the top 10 sequences generated during the execution, a graph depicting the evolutionary trajectory of the scores associated with the generated sequences, another graph contrasting the distribution of the scores of the generated sequences with those of the original dataset.
+The pipeline produces a csv file containing the desired number of sequences and their respective scores, similar to the original EvoPlay PAB1-GFP-Task. Additionally, we provide a file highlighting the top 10 sequences generated during the execution, a graph depicting the evolutionary trajectory of the scores associated with the generated sequences, and another graph contrasting the distribution of the scores of the generated sequences with those of the original dataset.
 
  
 
