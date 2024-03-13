@@ -59,7 +59,7 @@ python train_m_single_m_p_pab1.py <dataset_path> <num_sequences> <output_dir>
 ```
 
 Where:
-- <dataset_path> is the path to the dataset directory you want to use.
+- <dataset_path> is the path to the dataset file you want to use.
 - <num_sequences> is the number of sequences to generate (must be an integer).
 - <output_dir> is the name of the directory where you want the output to be saved.
 
