@@ -12,7 +12,7 @@ This repository contains all the code developed for the thesis, as well as a lin
 
 **Code:**
 
-* **Base Code of the Task**. Obtained from the [official repository](https://github.com/melobio/EvoPlay/tree/main/code/PAB1_GFP_task), maintained by model's authors.
+* **Base Code of the Task**. Obtained from the [official repository](https://github.com/melobio/EvoPlay/tree/main/code/PAB1_GFP_task), maintained by authors of the EvoPlay paper.
 * **Biotrainer**. Obtained from the [official repository](https://github.com/sacdallago/biotrainer)
 
 **Neural Networks:**
