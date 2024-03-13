@@ -44,7 +44,6 @@ curl -sSL https://install.python-poetry.org/ | python3 - --version 1.4.2
 2. Install dependencies `poetry`:
 ```bash
 # In the base directory
-cd poetry_environment
 poetry install
 ```
 
