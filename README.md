@@ -72,7 +72,7 @@ poetry run python train_m_single_m_p_pab1.py <dataset_path> <num_sequences> <out
 
 ## Results
 
-The pipeline produces a csv file containing the desired number of sequences and their respective scores, similar to the original EvoPlay PAB1-GFP-Task. Additionally, we provide a file highlighting the top 10 sequences generated during the execution, a graph depicting the evolutionary trajectory of the scores associated with the generated sequences, and another graph contrasting the distribution of the scores of the generated sequences with those of the original dataset. An example of this can be found under the [examples](https://github.com/selindemirtuerk/BachelorThesis-PAB1_Task_with_biotrainer/tree/main/examples) folder. 
+The pipeline produces a csv file containing the desired number of sequences and their respective scores, similar to the original EvoPlay PAB1-GFP-Task. Additionally, we provide a file highlighting the top 10 sequences generated during the execution, a graph depicting the evolutionary trajectory of the scores associated with the generated sequences, and another graph contrasting the distribution of the scores of the generated sequences with those of the original dataset. An example of this can be found under the [examples](https://github.com/selindemirtuerk/BachelorThesis-PAB1_Task_with_biotrainer/tree/main/examples/results) folder. 
 
  
 
