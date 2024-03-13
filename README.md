@@ -28,7 +28,7 @@ This repository contains all the code developed for the thesis, as well as a lin
 An environment yml file for dependencies can be found [here](https://github.com/selindemirtuerk/BachelorThesis-PAB1_Task_with_biotrainer/blob/main/environment/environment.yml)
 
 ```bash
-#change to working directory
+# In the base directory:
 conda env create -f /environment/environment.yml
 ```
 
@@ -54,21 +54,21 @@ You will need to provide the path to your dataset, number of desired sequences a
 1. With Conda:
 
 ```bash
-# change to working directory 
+# In the base directory:
 python train_m_single_m_p_pab1.py /path/to/your/dataset number_of_sequences_to_generate name_of_output_directory
 ```
 
 * **Example Usage**.
 
 ```bash
-# change to working directory
+# In the base directory:
 python train_m_single_m_p_pab1.py /examples/data/PAB1.txt 10000 output
 ```
 
 2. With Poetry:
 
 ```bash
-# change to working directory 
+# In the base directory:
 poetry python train_m_single_m_p_pab1.py /path/to/your/dataset number_of_sequences_to_generate name_of_output_directory
 ```
 
