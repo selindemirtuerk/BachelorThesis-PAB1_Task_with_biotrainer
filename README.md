@@ -55,21 +55,19 @@ You will need to provide the path to your dataset, number of desired sequences a
 
 ```bash
 # In the base directory:
-python train_m_single_m_p_pab1.py /path/to/your/dataset number_of_sequences_to_generate name_of_output_directory
+python train_m_single_m_p_pab1.py <dataset_path> <num_sequences> <output_dir>
 ```
 
-* **Example Usage**.
-
-```bash
-# In the base directory:
-python train_m_single_m_p_pab1.py /examples/data/PAB1.txt 10000 output
-```
+Where:
+- <dataset_path> is the path to the dataset directory you want to use.
+- <num_sequences> is the number of sequences to generate (must be an integer).
+- <output_dir> is the name of the directory where you want the output to be saved.
 
 2. With Poetry:
 
 ```bash
 # In the base directory:
-poetry python train_m_single_m_p_pab1.py /path/to/your/dataset number_of_sequences_to_generate name_of_output_directory
+poetry python train_m_single_m_p_pab1.py <dataset_path> <num_sequences> <output_dir>
 ```
 
 ## Results
