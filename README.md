@@ -67,7 +67,7 @@ Where:
 
 ```bash
 # In the base directory:
-poetry python train_m_single_m_p_pab1.py <dataset_path> <num_sequences> <output_dir>
+poetry run python train_m_single_m_p_pab1.py <dataset_path> <num_sequences> <output_dir>
 ```
 
 ## Results
