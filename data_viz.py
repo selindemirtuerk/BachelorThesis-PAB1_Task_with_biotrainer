@@ -66,7 +66,11 @@ class DataVisualization:
 
         fig = plt.gcf()
         fig.set_size_inches(18.5, 10.5)
-        fig.savefig(self.output_dir /'evolution_of_scores.pdf', format="pdf", dpi=600)
+        try:
+            fig.savefig(self.output_dir /'evolution_of_scores.pdf', format="pdf", dpi=600)
+            print(f"Figure saved to {self.output_dir /'evolution_of_scores.pdf'}")
+        except Exception as e:
+            print(f"Error saving the figure: {e}")
 
     def plot_score_distributions(self, original_scores, generated_scores):
         plt.figure(figsize=(8, 5))
@@ -89,7 +93,11 @@ class DataVisualization:
 
         fig = plt.gcf()
         fig.set_size_inches(18.5, 10.5)
-        fig.savefig(self.output_dir / 'distribution_of_scores.pdf', format="pdf", dpi=600)
+        try:
+            fig.savefig(self.output_dir / 'distribution_of_scores.pdf', format="pdf", dpi=600)
+            print(f"Figure saved to {self.output_dir /'evolution_of_scores.pdf'}")
+        except Exception as e:
+            print(f"Error saving the figure: {e}")
     
     def get_top_sequences(self):
         numeric_columns = self.data.select_dtypes(include=[np.number]).columns
@@ -103,6 +111,13 @@ class DataVisualization:
 
         top_sequences = self.data.nlargest(10, score_column)
         top_sequences.to_csv(self.output_dir / "top_ten_sequences.csv", index=False)
+
+        top_ten = self.output_dir / "top_ten_sequences.csv"
+        try:
+            top_sequences.to_csv(top_ten, index=False)
+            print(f"File successfully saved to {top_ten}")
+        except Exception as e:
+            print(f"Failed to save the file: {e}")
     
     def create_data_visualisations(self, num_of_generated_seqs, original_dataset_file, generated_dataset_file):
         

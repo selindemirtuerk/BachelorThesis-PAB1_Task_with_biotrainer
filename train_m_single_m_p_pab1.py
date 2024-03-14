@@ -202,7 +202,7 @@ class TrainPipeline():
         return loss, entropy
 
 
-    def run(self, output_dir):
+    def run(self, output_dir, num_of_sequences):
         """run the training pipeline"""
         starttime = datetime.datetime.now() 
         #part = 2
@@ -212,15 +212,17 @@ class TrainPipeline():
                 print("batch i:{}, episode_len:{}".format(
                         i+1, self.episode_len))
 
-                if len(self.seq_env.playout_dict.keys()) >= 10000:
+                if len(self.seq_env.playout_dict.keys()) >= num_of_sequences:
                     m_p_fitness = np.array(list(self.seq_env.playout_dict.values()))
                     m_p_seqs = np.array(list(self.seq_env.playout_dict.keys()))
                     df_m_p = pd.DataFrame(
                         {"sequence": m_p_seqs, "pred_fit": m_p_fitness})
                     df_m_p.to_csv( output_dir / "generated_sequences_and_scores.csv", index=False)
+                    print(f"File successfully saved to {output_dir}")
                     endtime = datetime.datetime.now() 
                     print('time cost：',(endtime-starttime).seconds)
-                    sys.exit(0)
+                    break
+                    #sys.exit(0)
 
                 if len(self.data_buffer) > self.batch_size and self.buffer_no_extend == False:
                     if True:
@@ -276,8 +278,8 @@ if __name__ == '__main__':
         trust_radius=100,
         one_hot_switch = one_hot_switch
     )
-    training_pipeline.run(output_dir)
-
+    training_pipeline.run(output_dir, num_of_sequences)
+   
     #add the evolution of scores, the distribution of scores and the top 10 sequences of the run to output directory
     output_dir = Path(os.path.join(cwd, output_dir_name))
     results_file_path = output_dir / "generated_sequences_and_scores.csv"
